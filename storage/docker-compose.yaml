@@ -1,0 +1,38 @@
+services:
+
+  postgres:
+    build: ./postgres
+
+    ports:
+      - "5432:5432"
+
+    secrets:
+      - postgres_user
+      - postgres_password
+      - postgres_db
+
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB_FILE: /run/secrets/postgres_db
+
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "8080:8080"
+
+secrets:
+
+  postgres_user:
+    file: ./secrets/postgres_user.txt
+
+  postgres_password:
+    file: ./secrets/postgres_password.txt
+
+  postgres_db:
+    file: ./secrets/postgres_database.txt

@@ -1,0 +1,16 @@
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS postgis_topology;
+
+CREATE TABLE users (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL
+);
+
+CREATE TABLE postcards (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    image_path TEXT NOT NULL,
+    description TEXT,
+    coordinates geometry(Point, 4326) NOT NULL
+);
