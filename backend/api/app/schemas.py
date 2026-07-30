@@ -12,6 +12,4 @@ class UserResponse(BaseModel):
     username: str
     email: str
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}

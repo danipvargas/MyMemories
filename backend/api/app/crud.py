@@ -5,11 +5,8 @@ from app.schemas import UserCreate
 
 
 def create_user(db: Session, user: UserCreate):
-
     db_user = User(
-        username=user.username,
-        email=user.email,
-        password_hash=user.password_hash
+        username=user.username, email=user.email, password_hash=user.password_hash
     )
 
     db.add(db_user)
@@ -20,5 +17,4 @@ def create_user(db: Session, user: UserCreate):
 
 
 def get_users(db: Session):
-
     return db.query(User).all()
