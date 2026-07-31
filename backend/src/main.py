@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from src.database import Base, engine
+from src.routers.postcard import router as postcards_router
 from src.routers.user import router as users_router
 
 Base.metadata.create_all(bind=engine)
@@ -21,3 +22,4 @@ app = FastAPI(
 )
 
 app.include_router(users_router)
+app.include_router(postcards_router)

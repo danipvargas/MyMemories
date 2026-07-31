@@ -2,6 +2,7 @@ from datetime import date
 from enum import Enum
 
 from geoalchemy2 import Geometry
+from geoalchemy2.elements import WKBElement
 from sqlalchemy import Date, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
@@ -31,13 +32,13 @@ class PostCard(Base):
 
     country: Mapped[str] = mapped_column(String(50), nullable=False)
 
-    city: Mapped[str] = mapped_column(String(50), nullable=False)
+    city: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
-    region: Mapped[str] = mapped_column(String(50))
+    region: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
-    coordinates: Mapped[object] = mapped_column(
+    coordinates: Mapped[WKBElement] = mapped_column(
         Geometry("POINT", srid=4326),
         nullable=False,
     )
 
-    description: Mapped[str] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
