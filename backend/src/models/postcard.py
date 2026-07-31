@@ -17,7 +17,7 @@ class DatePrecision(Enum):
     UNKNOWN = "unknown"
 
 
-class PostCard(Base):
+class Postcard(Base):
     __tablename__ = "postcards"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
