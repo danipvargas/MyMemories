@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from app.models import User
-from app.schemas.user import UserCreate, UserUpdate
+from src.models.user import User
+from src.schemas.user import UserCreate, UserUpdate
 
 
 def create_user(db: Session, new_user: UserCreate):

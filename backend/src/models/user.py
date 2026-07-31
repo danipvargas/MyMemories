@@ -6,7 +6,7 @@ from sqlalchemy import Date, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database import Base
+from src.database import Base
 
 
 class DatePrecision(Enum):
