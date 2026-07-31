@@ -18,7 +18,7 @@ CREATE TABLE postcards (
     adquisition_date DATE,
     adquisition_date_precision date_precision NOT NULL,
     country VARCHAR(50) NOT NULL,
-    city VARCHAR(50) NOT NULL,
+    city VARCHAR(50),
     region VARCHAR(50),
     coordinates geometry(Point, 4326) NOT NULL,
     description TEXT
