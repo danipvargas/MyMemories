@@ -1,7 +1,7 @@
 from fastapi import UploadFile
 
 
-def process_and_save_image(image: UploadFile):
+def process_and_save_postcard(image: UploadFile):
     return "/data/image.png"
 
 

@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from src.database import Base, engine
+from src.exceptions.base import MyMemoriesError
 from src.routers.postcard import router as postcards_router
 from src.routers.user import router as users_router
 
@@ -12,9 +14,9 @@ app = FastAPI(
     version="1.0.0",
     contact={"name": "Daniel Pérez Vargas", "email": "danpv2000@gmail.com"},
     openapi_tags=[
-        {"name": "users", "description": "CRUD operations related to users."},
+        {"name": "Users", "description": "CRUD operations related to users."},
         {
-            "name": "postcards",
+            "name": "Postcards",
             "description": "CRUD operations related to postcards. Include some "
             "filtered search focused ones.",
         },
@@ -23,3 +25,14 @@ app = FastAPI(
 
 app.include_router(users_router)
 app.include_router(postcards_router)
+
+
+@app.exception_handler(MyMemoriesError)
+async def handle_application_error(
+    request: Request,
+    exc: MyMemoriesError,
+):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.message},
+    )
