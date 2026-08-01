@@ -1,13 +1,17 @@
 from datetime import date
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from geoalchemy2 import Geometry
 from geoalchemy2.elements import WKBElement
-from sqlalchemy import Date, Integer, String, Text
+from sqlalchemy import Date, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database import Base
+
+if TYPE_CHECKING:
+    from src.models.user import User
 
 
 class DatePrecision(Enum):
@@ -21,6 +25,10 @@ class Postcard(Base):
     __tablename__ = "postcards"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    user: Mapped["User"] = relationship(back_populates="postcards")
 
     image_path: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
 
