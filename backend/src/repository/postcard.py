@@ -23,9 +23,11 @@ def convert_db_postcard_to_response(db_postcard: Postcard):
     )
 
 
-def create_postcard(db: Session, new_postcard: PostcardCreate, postcard_img_path: str):
+def create_postcard(
+    db: Session, new_postcard: PostcardCreate, postcard_image_path: str
+):
     db_postcard = Postcard(
-        image_path=postcard_img_path,
+        image_path=postcard_image_path,
         user_id=new_postcard.user_id,
         adquisition_date=new_postcard.adquisition_date,
         adquisition_date_precision=new_postcard.adquisition_date_precision,
@@ -46,7 +48,7 @@ def create_postcard(db: Session, new_postcard: PostcardCreate, postcard_img_path
     return convert_db_postcard_to_response(db_postcard=db_postcard)
 
 
-def delete_postcard_by_id(db: Session, postcard_id: int):
+def delete_postcard(db: Session, postcard_id: int):
     postcard = db.get(Postcard, postcard_id)
 
     if postcard is None:
@@ -82,3 +84,7 @@ def get_postcards(db: Session):
     return [
         convert_db_postcard_to_response(db_postcard=pc) for pc in existing_postcards
     ]
+
+
+def get_postcard_by_id(db: Session, postcard_id: int):
+    return convert_db_postcard_to_response(db.get(Postcard, postcard_id))

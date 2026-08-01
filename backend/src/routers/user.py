@@ -3,7 +3,13 @@ from sqlalchemy.orm import Session
 
 from src.database import get_db
 from src.schemas.user import UserCreate, UserResponse, UserUpdate
-from src.services.user import create_user, delete_user_by_id, get_users, update_user
+from src.services.user import (
+    create_user,
+    delete_user_by_id,
+    get_user_by_id,
+    get_users,
+    update_user,
+)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -48,12 +54,28 @@ def read_users(db: Session = Depends(get_db)):
     return get_users(db)
 
 
+@router.get(
+    "/{user_id}",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve use by id",
+    description=("Retrieve the unique existing user with the given id, if exists"),
+    responses={
+        200: {"description": "User successfully retrieved."},
+        404: {"description": "User not found"},
+        500: {"description": "Unexpected server error."},
+    },
+)
+def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    return get_user_by_id(user_id=user_id, db=db)
+
+
 @router.delete(
     "/{user_id}",
     response_model=UserResponse,
     status_code=status.HTTP_200_OK,
-    summary="Delete user by user_id",
-    description=("Deletes, if exist, the user with the provided user_id. "),
+    summary="Delete user by id",
+    description=("Deletes, if exist, the user with the provided id. "),
     responses={
         200: {"description": "User successfully deleted."},
         404: {"description": "User not found"},

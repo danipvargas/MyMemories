@@ -60,6 +60,11 @@ def get_user_by_id(db: Session, user_id: int):
     return db.get(User, user_id)
 
 
+def exists_user_by_id(db: Session, user_id: int):
+    stmt = select(exists().where(User.id == user_id))
+    return db.scalar(stmt)
+
+
 def exists_username(db: Session, username: str):
     stmt = select(exists().where(User.username == username))
     return db.scalar(stmt)

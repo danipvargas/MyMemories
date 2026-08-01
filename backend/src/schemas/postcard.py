@@ -44,6 +44,7 @@ class PostcardCreate(BaseModel):
         description: str | None = Form(None),
     ):
         return cls(
+            user_id=user_id,
             adquisition_date=adquisition_date,
             adquisition_date_precision=adquisition_date_precision,
             country=country,
