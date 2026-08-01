@@ -1,15 +1,35 @@
 from fastapi import UploadFile
+from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import Session
 
 from src.exceptions.postcard import PostcardNotFoundException
 from src.exceptions.user import UserNotFoundException
+from src.models.postcard import Postcard
 from src.repository.postcard import create_postcard as repository_create_postcard
 from src.repository.postcard import delete_postcard as repository_delete_postcard
 from src.repository.postcard import get_postcard_by_id as repository_get_postcard_by_id
 from src.repository.postcard import get_postcards as repository_get_postcards
+from src.repository.postcard import update_postcard as repository_update_postcard
 from src.repository.user import exists_user_by_id
-from src.schemas.postcard import PostcardCreate
+from src.schemas.postcard import PostcardCreate, PostcardResponse, PostcardUpdate
 from src.services.image import process_and_save_postcard
+
+
+def __convert_db_postcard_to_response__(db_postcard: Postcard):
+    point = to_shape(db_postcard.coordinates)
+
+    return PostcardResponse(
+        id=db_postcard.id,
+        user_id=db_postcard.user_id,
+        image_path=db_postcard.image_path,
+        adquisition_date=db_postcard.adquisition_date,
+        adquisition_date_precision=db_postcard.adquisition_date_precision,
+        country=db_postcard.country,
+        city=db_postcard.city,
+        region=db_postcard.region,
+        coordinates=(point.y, point.x),
+        description=db_postcard.description,
+    )
 
 
 def create_postcard(
@@ -24,21 +44,28 @@ def create_postcard(
 
     image_path = process_and_save_postcard(postcard_image)
 
-    return repository_create_postcard(
-        db=db,
-        new_postcard=new_postcard,
-        postcard_image_path=image_path,
+    return __convert_db_postcard_to_response__(
+        repository_create_postcard(
+            db=db,
+            new_postcard=new_postcard,
+            postcard_image_path=image_path,
+        )
     )
 
 
 def get_postcards(
     db: Session,
 ):
-    return repository_get_postcards(db=db)
+    return [
+        __convert_db_postcard_to_response__(dbp)
+        for dbp in repository_get_postcards(db=db)
+    ]
 
 
 def get_postcard_by_id(db: Session, postcard_id: int):
-    return repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
+    return __convert_db_postcard_to_response__(
+        repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
+    )
 
 
 def delete_postcard(db: Session, postcard_id: int):
@@ -47,63 +74,35 @@ def delete_postcard(db: Session, postcard_id: int):
     if not deleted_postcard:
         raise PostcardNotFoundException()
 
-    return deleted_postcard
+    return __convert_db_postcard_to_response__(deleted_postcard)
 
 
-# def update_user(
-#     db: Session,
-#     user_id: int,
-#     modified_fields: UserUpdate,
-#     new_profile_pic: UploadFile | None = None,
-# ):
-#     user = get_user_by_id(db=db, user_id=user_id)
+def update_postcard(
+    db: Session,
+    postcard_id: int,
+    modified_fields: PostcardUpdate,
+    new_postcard_image: UploadFile | None = None,
+):
+    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
 
-#     if user is None:
-#         raise UserNotFoundException()
+    if postcard is None:
+        raise UserNotFoundException()
 
-#     if (
-#         modified_fields.username is not None
-#         and modified_fields.username != user.username
-#         and exists_username(db, modified_fields.username)
-#     ):
-#         raise UsernameAlreadyExists()
+    update_data = modified_fields.model_dump(
+        exclude_unset=True,
+        exclude_none=True,
+    )
 
-#     if (
-#         modified_fields.email is not None
-#         and modified_fields.email != user.email
-#         and exists_email(db, modified_fields.email)
-#     ):
-#         raise EmailAlreadyRegistered()
+    postcard_image_path = None
 
-#     update_data = modified_fields.model_dump(
-#         exclude_unset=True,
-#         exclude_none=True,
-#     )
+    if new_postcard_image is not None:
+        postcard_image_path = process_and_save_postcard(image=new_postcard_image)
 
-#     if "new_password" in update_data:
-#         if modified_fields.old_password is None:
-#             raise NotMatchingPasswordException()
-
-#         if not validate_user_password(
-#             db=db,
-#             user_id=user_id,
-#             password=modified_fields.old_password,
-#         ):
-#             raise NotMatchingPasswordException()
-
-#         update_data["password_hash"] = hash_password(modified_fields.new_password)
-
-#     update_data.pop("old_password", None)
-#     update_data.pop("new_password", None)
-
-#     profile_image_path = None
-
-#     if new_profile_pic is not None:
-#         profile_image_path = process_and_save_profile_pic(image=new_profile_pic)
-
-#     return repository_update_user(
-#         db=db,
-#         user=user,
-#         update_data=update_data,
-#         new_profile_pic_path=profile_image_path,
-#     )
+    return __convert_db_postcard_to_response__(
+        repository_update_postcard(
+            db=db,
+            postcard=postcard,
+            update_data=update_data,
+            new_postcard_image_path=postcard_image_path,
+        )
+    )

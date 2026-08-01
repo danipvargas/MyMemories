@@ -1,26 +1,10 @@
+from typing import Any
+
 from geoalchemy2.elements import WKTElement
-from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import Session
 
 from src.models.postcard import Postcard
-from src.schemas.postcard import PostcardCreate, PostcardResponse, PostcardUpdate
-
-
-def convert_db_postcard_to_response(db_postcard: Postcard):
-    point = to_shape(db_postcard.coordinates)
-
-    return PostcardResponse(
-        id=db_postcard.id,
-        user_id=db_postcard.user_id,
-        image_path=db_postcard.image_path,
-        adquisition_date=db_postcard.adquisition_date,
-        adquisition_date_precision=db_postcard.adquisition_date_precision,
-        country=db_postcard.country,
-        city=db_postcard.city,
-        region=db_postcard.region,
-        coordinates=(point.y, point.x),
-        description=db_postcard.description,
-    )
+from src.schemas.postcard import PostcardCreate
 
 
 def create_postcard(
@@ -45,7 +29,7 @@ def create_postcard(
     db.commit()
     db.refresh(db_postcard)
 
-    return convert_db_postcard_to_response(db_postcard=db_postcard)
+    return db_postcard
 
 
 def delete_postcard(db: Session, postcard_id: int):
@@ -57,34 +41,30 @@ def delete_postcard(db: Session, postcard_id: int):
     db.delete(postcard)
     db.commit()
 
-    return convert_db_postcard_to_response(db_postcard=postcard)
+    return postcard
 
 
-def update_postcard(db: Session, postcard_id: int, modified_fields: PostcardUpdate):
-    postcard = db.get(Postcard, postcard_id)
-
-    if postcard is None:
-        return None
-
-    update_data = modified_fields.model_dump(exclude_unset=True)
-
+def update_postcard(
+    db: Session,
+    postcard: Postcard,
+    update_data: dict[str, Any],
+    new_postcard_image_path: str | None = None,
+) -> Postcard:
     for field, value in update_data.items():
-        if field != "id":
-            setattr(postcard, field, value)
+        setattr(postcard, field, value)
+
+    if new_postcard_image_path is not None:
+        postcard.image_path = new_postcard_image_path
 
     db.commit()
     db.refresh(postcard)
 
-    return convert_db_postcard_to_response(db_postcard=postcard)
+    return postcard
 
 
 def get_postcards(db: Session):
-    existing_postcards = db.query(Postcard).all()
-
-    return [
-        convert_db_postcard_to_response(db_postcard=pc) for pc in existing_postcards
-    ]
+    return db.query(Postcard).all()
 
 
 def get_postcard_by_id(db: Session, postcard_id: int):
-    return convert_db_postcard_to_response(db.get(Postcard, postcard_id))
+    return db.get(Postcard, postcard_id)

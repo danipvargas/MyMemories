@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.orm import Session
 
 from src.database import get_db
-from src.schemas.postcard import PostcardCreate, PostcardResponse
+from src.schemas.postcard import PostcardCreate, PostcardResponse, PostcardUpdate
 from src.services.postcard import (
     create_postcard,
     delete_postcard,
     get_postcard_by_id,
     get_postcards,
+    update_postcard,
 )
 
 router = APIRouter(prefix="/postcards", tags=["Postcards"])
@@ -87,9 +88,31 @@ def delete_postcard_by_id(postcard_id: int, db: Session = Depends(get_db)):
     return delete_postcard(db, postcard_id=postcard_id)
 
 
-# @router.patch("/{postcard_id}", response_model=PostcardResponse)
-# def patch_user(
-#     postcard_id: int, modified_fields: PostcardUpdate, db: Session = Depends(get_db)
-# ):
-#     return update_postcard(
-#           db, postcard_id=postcard_id, modified_fields=modified_fields)
+@router.patch(
+    "/{postcard_id}",
+    response_model=PostcardResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update postcard information",
+    description=(
+        "Updates, if exist, the information of the postcard with the provided id."
+    ),
+    responses={
+        200: {"description": "Postcard successfully updated."},
+        400: {"description": "Invalid postcard data."},
+        404: {"description": "Postcard not found"},
+        415: {"description": "Unsupported image format."},
+        500: {"description": "Unexpected server error."},
+    },
+)
+def patch_postcard(
+    postcard_id: int,
+    modified_fields: PostcardUpdate = Depends(PostcardUpdate.as_form),
+    postcard_image: UploadFile | None = File(None),
+    db: Session = Depends(get_db),
+):
+    return update_postcard(
+        db=db,
+        postcard_id=postcard_id,
+        modified_fields=modified_fields,
+        new_postcard_image=postcard_image,
+    )

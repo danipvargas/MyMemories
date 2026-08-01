@@ -65,3 +65,26 @@ class PostcardUpdate(BaseModel):
     city: str | None = None
     region: str | None = None
     description: str | None = None
+
+    @classmethod
+    def as_form(
+        cls,
+        adquisition_date: date | None = Form(None),
+        adquisition_date_precision: DatePrecision | None = Form(None),
+        country: str | None = Form(None),
+        latitude: float | None = Form(None),
+        longitude: float | None = Form(None),
+        city: str | None = Form(None),
+        region: str | None = Form(None),
+        description: str | None = Form(None),
+    ):
+        return cls(
+            adquisition_date=adquisition_date,
+            adquisition_date_precision=adquisition_date_precision,
+            country=country,
+            latitude=latitude,
+            longitude=longitude,
+            city=city,
+            region=region,
+            description=description,
+        )
