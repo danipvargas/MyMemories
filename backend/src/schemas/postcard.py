@@ -8,6 +8,7 @@ from src.models.postcard import DatePrecision
 
 class PostcardResponse(BaseModel):
     id: int
+    user_id: int
     image_path: str
     adquisition_date: date
     adquisition_date_precision: DatePrecision
@@ -19,6 +20,7 @@ class PostcardResponse(BaseModel):
 
 
 class PostcardCreate(BaseModel):
+    user_id: int
     adquisition_date: date
     adquisition_date_precision: DatePrecision
     country: str
@@ -31,6 +33,7 @@ class PostcardCreate(BaseModel):
     @classmethod
     def as_form(
         cls,
+        user_id: int = Form(...),
         adquisition_date: date = Form(...),
         adquisition_date_precision: DatePrecision = Form(...),
         country: str = Form(...),

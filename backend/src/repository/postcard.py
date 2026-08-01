@@ -11,6 +11,7 @@ def convert_db_postcard_to_response(db_postcard: Postcard):
 
     return PostcardResponse(
         id=db_postcard.id,
+        user_id=db_postcard.user_id,
         image_path=db_postcard.image_path,
         adquisition_date=db_postcard.adquisition_date,
         adquisition_date_precision=db_postcard.adquisition_date_precision,
@@ -25,6 +26,7 @@ def convert_db_postcard_to_response(db_postcard: Postcard):
 def create_postcard(db: Session, new_postcard: PostcardCreate, postcard_img_path: str):
     db_postcard = Postcard(
         image_path=postcard_img_path,
+        user_id=new_postcard.user_id,
         adquisition_date=new_postcard.adquisition_date,
         adquisition_date_precision=new_postcard.adquisition_date_precision,
         country=new_postcard.country,
