@@ -1,10 +1,20 @@
+from fastapi import Form
 from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
     username: str
     email: str
-    password_hash: str
+    password: str
+
+    @classmethod
+    def as_form(
+        cls,
+        username: str = Form(...),
+        email: str = Form(...),
+        password: str = Form(...),
+    ):
+        return cls(username=username, email=email, password=password)
 
 
 class UserResponse(BaseModel):
@@ -18,4 +28,5 @@ class UserResponse(BaseModel):
 class UserUpdate(BaseModel):
     username: str | None = None
     email: str | None = None
-    password_hash: str | None = None
+    old_password: str | None = None
+    new_password: str | None = None

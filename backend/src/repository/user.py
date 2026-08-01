@@ -4,11 +4,12 @@ from src.models.user import User
 from src.schemas.user import UserCreate, UserUpdate
 
 
-def create_user(db: Session, new_user: UserCreate):
+def create_user(db: Session, new_user: UserCreate, profile_image_path: str):
     db_user = User(
         username=new_user.username,
         email=new_user.email,
-        password_hash=new_user.password_hash,
+        password_hash=new_user.password,
+        profile_image_path=profile_image_path,
     )
 
     db.add(db_user)
