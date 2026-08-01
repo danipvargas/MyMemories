@@ -15,7 +15,19 @@ from src.schemas.postcard import PostcardCreate, PostcardResponse, PostcardUpdat
 from src.services.image import process_and_save_postcard
 
 
-def __convert_db_postcard_to_response__(db_postcard: Postcard):
+def _to_postcard_response_(db_postcard: Postcard) -> PostcardResponse:
+    """
+    Convert a postcard database model into its response schema.
+
+    Args:
+        db_postcard: Database postcard instance to convert.
+
+    Returns:
+        A postcard response containing the postcard data.
+
+    Raises:
+        ValueError: If the postcard coordinates cannot be converted.
+    """
     point = to_shape(db_postcard.coordinates)
 
     return PostcardResponse(
@@ -36,7 +48,22 @@ def create_postcard(
     db: Session,
     new_postcard: PostcardCreate,
     postcard_image: UploadFile,
-):
+) -> PostcardResponse:
+    """
+    Create a new postcard for an existing user.
+
+    Args:
+        db: Active database session.
+        new_postcard: Data used to create the postcard.
+        postcard_image: Uploaded postcard image.
+
+    Returns:
+        The created postcard.
+
+    Raises:
+        UserNotFoundException: If the specified user does not exist.
+        sqlalchemy.exc.SQLAlchemyError: If the database operation fails.
+    """
     if not exists_user_by_id(db=db, user_id=new_postcard.user_id):
         raise UserNotFoundException(
             f"No user with user_id={new_postcard.user_id} found."
@@ -44,7 +71,7 @@ def create_postcard(
 
     image_path = process_and_save_postcard(postcard_image)
 
-    return __convert_db_postcard_to_response__(
+    return _to_postcard_response_(
         repository_create_postcard(
             db=db,
             new_postcard=new_postcard,
@@ -55,26 +82,66 @@ def create_postcard(
 
 def get_postcards(
     db: Session,
-):
-    return [
-        __convert_db_postcard_to_response__(dbp)
-        for dbp in repository_get_postcards(db=db)
-    ]
+) -> list[PostcardResponse]:
+    """
+    Retrieve all stored postcards.
+
+    Args:
+        db: Active database session.
+
+    Returns:
+        A list containing all postcards.
+
+    Raises:
+        sqlalchemy.exc.SQLAlchemyError: If the database query fails.
+    """
+    return [_to_postcard_response_(dbp) for dbp in repository_get_postcards(db=db)]
 
 
-def get_postcard_by_id(db: Session, postcard_id: int):
-    return __convert_db_postcard_to_response__(
-        repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
-    )
+def get_postcard_by_id(db: Session, postcard_id: int) -> PostcardResponse:
+    """
+    Retrieve a postcard by its identifier.
+
+    Args:
+        db: Active database session.
+        postcard_id: Identifier of the postcard to retrieve.
+
+    Returns:
+        The requested postcard.
+
+    Raises:
+        PostcardNotFoundException: If no postcard with the given identifier exists.
+        sqlalchemy.exc.SQLAlchemyError: If the database query fails.
+    """
+    db_postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
+
+    if not db_postcard:
+        raise PostcardNotFoundException()
+
+    return _to_postcard_response_(db_postcard)
 
 
-def delete_postcard(db: Session, postcard_id: int):
+def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
+    """
+    Delete a postcard by its identifier.
+
+    Args:
+        db: Active database session.
+        postcard_id: Identifier of the postcard to delete.
+
+    Returns:
+        The deleted postcard.
+
+    Raises:
+        PostcardNotFoundException: If no postcard with the given identifier exists.
+        sqlalchemy.exc.SQLAlchemyError: If the database operation fails.
+    """
     deleted_postcard = repository_delete_postcard(db=db, postcard_id=postcard_id)
 
     if not deleted_postcard:
         raise PostcardNotFoundException()
 
-    return __convert_db_postcard_to_response__(deleted_postcard)
+    return _to_postcard_response_(deleted_postcard)
 
 
 def update_postcard(
@@ -82,11 +149,27 @@ def update_postcard(
     postcard_id: int,
     modified_fields: PostcardUpdate,
     new_postcard_image: UploadFile | None = None,
-):
+) -> PostcardResponse:
+    """
+    Update an existing postcard.
+
+    Args:
+        db: Active database session.
+        postcard_id: Identifier of the postcard to update.
+        modified_fields: Fields to update.
+        new_postcard_image: New postcard image, if provided.
+
+    Returns:
+        The updated postcard.
+
+    Raises:
+        PostcardNotFoundException: If no postcard with the given identifier exists.
+        sqlalchemy.exc.SQLAlchemyError: If the database operation fails.
+    """
     postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
 
     if postcard is None:
-        raise UserNotFoundException()
+        raise PostcardNotFoundException()
 
     update_data = modified_fields.model_dump(
         exclude_unset=True,
@@ -98,7 +181,7 @@ def update_postcard(
     if new_postcard_image is not None:
         postcard_image_path = process_and_save_postcard(image=new_postcard_image)
 
-    return __convert_db_postcard_to_response__(
+    return _to_postcard_response_(
         repository_update_postcard(
             db=db,
             postcard=postcard,

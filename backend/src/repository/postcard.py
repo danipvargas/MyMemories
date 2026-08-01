@@ -9,7 +9,18 @@ from src.schemas.postcard import PostcardCreate
 
 def create_postcard(
     db: Session, new_postcard: PostcardCreate, postcard_image_path: str
-):
+) -> Postcard:
+    """
+    Create a new postcard and store it in the database.
+
+    Args:
+        db: Active database session.
+        new_postcard: Data used to create the postcard.
+        postcard_image_path: Path where the postcard image is stored.
+
+    Returns:
+        The newly created postcard.
+    """
     db_postcard = Postcard(
         image_path=postcard_image_path,
         user_id=new_postcard.user_id,
@@ -32,7 +43,17 @@ def create_postcard(
     return db_postcard
 
 
-def delete_postcard(db: Session, postcard_id: int):
+def delete_postcard(db: Session, postcard_id: int) -> Postcard | None:
+    """
+    Delete a postcard from the database by its identifier.
+
+    Args:
+        db: Active database session.
+        postcard_id: Identifier of the postcard to delete.
+
+    Returns:
+        The deleted postcard if it exists, otherwise None.
+    """
     postcard = db.get(Postcard, postcard_id)
 
     if postcard is None:
@@ -50,6 +71,18 @@ def update_postcard(
     update_data: dict[str, Any],
     new_postcard_image_path: str | None = None,
 ) -> Postcard:
+    """
+    Update the fields of an existing postcard.
+
+    Args:
+        db: Active database session.
+        postcard: Postcard instance to update.
+        update_data: Dictionary containing the fields and values to update.
+        new_postcard_image_path: New image path to assign to the postcard, if provided.
+
+    Returns:
+        The updated postcard.
+    """
     for field, value in update_data.items():
         setattr(postcard, field, value)
 
@@ -62,9 +95,28 @@ def update_postcard(
     return postcard
 
 
-def get_postcards(db: Session):
+def get_postcards(db: Session) -> list[Postcard]:
+    """
+    Retrieve all postcards from the database.
+
+    Args:
+        db: Active database session.
+
+    Returns:
+        A list containing all stored postcards.
+    """
     return db.query(Postcard).all()
 
 
-def get_postcard_by_id(db: Session, postcard_id: int):
+def get_postcard_by_id(db: Session, postcard_id: int) -> Postcard:
+    """
+    Retrieve a postcard by its identifier.
+
+    Args:
+        db: Active database session.
+        postcard_id: Identifier of the postcard to retrieve.
+
+    Returns:
+        The matching postcard if found, otherwise None.
+    """
     return db.get(Postcard, postcard_id)
