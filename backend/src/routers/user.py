@@ -92,7 +92,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     status_code=status.HTTP_200_OK,
     summary="Update user information",
     description=(
-        "Updates, if exist, the information of the user with the provided user_id."
+        "Updates, if exist, the information of the user with the provided id."
     ),
     responses={
         200: {"description": "User successfully updated."},
