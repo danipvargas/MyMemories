@@ -2,7 +2,7 @@ from datetime import date
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from geoalchemy2 import Geometry
+from geoalchemy2 import Geography
 from geoalchemy2.elements import WKBElement
 from sqlalchemy import Date, ForeignKey, Integer, String, Text
 from sqlalchemy import Enum as SQLEnum
@@ -45,7 +45,7 @@ class Postcard(Base):
     region: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     coordinates: Mapped[WKBElement] = mapped_column(
-        Geometry("POINT", srid=4326),
+        Geography("POINT", srid=4326),
         nullable=False,
     )
 

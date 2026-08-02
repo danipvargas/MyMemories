@@ -88,3 +88,15 @@ class PostcardUpdate(BaseModel):
             region=region,
             description=description,
         )
+
+
+class PostcardFilters(BaseModel):
+    user_id: int | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    country: str | None = None
+    city: str | None = None
+    region: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    radius_km: float | None = None

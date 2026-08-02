@@ -1,10 +1,12 @@
 from typing import Any
 
 from geoalchemy2.elements import WKTElement
+from geoalchemy2.functions import ST_DWithin
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.models.postcard import Postcard
-from src.schemas.postcard import PostcardCreate
+from src.schemas.postcard import PostcardCreate, PostcardFilters
 
 
 def create_postcard(
@@ -95,9 +97,12 @@ def update_postcard(
     return postcard
 
 
-def get_postcards(db: Session) -> list[Postcard]:
+def get_postcards(
+    db: Session,
+    filters: PostcardFilters,
+) -> list[Postcard]:
     """
-    Retrieve all postcards from the database.
+    Retrieve all postcards from the database matching the given filters .
 
     Args:
         db: Active database session.
@@ -105,7 +110,49 @@ def get_postcards(db: Session) -> list[Postcard]:
     Returns:
         A list containing all stored postcards.
     """
-    return db.query(Postcard).all()
+    stmt = select(Postcard)
+    conditions = []
+
+    if filters.user_id:
+        conditions.append(Postcard.user_id == filters.user_id)
+
+    if filters.country:
+        conditions.append(Postcard.country.ilike(f"%{filters.country}%"))
+
+    if filters.city:
+        conditions.append(Postcard.city.ilike(f"%{filters.city}%"))
+
+    if filters.region:
+        conditions.append(Postcard.region.ilike(f"%{filters.region}%"))
+
+    if filters.start_date:
+        conditions.append(Postcard.adquisition_date >= filters.start_date)
+
+    if filters.end_date:
+        conditions.append(Postcard.adquisition_date <= filters.end_date)
+
+    if (
+        filters.latitude is not None
+        and filters.longitude is not None
+        and filters.radius_km is not None
+    ):
+        point = WKTElement(
+            f"POINT({filters.longitude} {filters.latitude})",
+            srid=4326,
+        )
+
+        stmt = stmt.where(
+            ST_DWithin(
+                Postcard.coordinates,
+                point,
+                filters.radius_km * 1000,
+            )
+        )
+
+    if conditions:
+        stmt = stmt.where(*conditions)
+
+    return db.scalars(stmt).all()
 
 
 def get_postcard_by_id(db: Session, postcard_id: int) -> Postcard:
