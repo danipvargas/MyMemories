@@ -136,6 +136,29 @@ def get_postcard_by_id(db: Session, postcard_id: int) -> PostcardResponse:
     return _to_postcard_response_(db_postcard)
 
 
+def get_postcard_image_path(db: Session, postcard_id: int) -> str:
+    """
+    Retrieve a postcard image path by its identifier.
+
+    Args:
+        db: Active database session.
+        postcard_id: Identifier of the postcard whose image to retrieve.
+
+    Returns:
+        The requested postcard image path, if exists.
+
+    Raises:
+        PostcardNotFoundException: If no postcard with the given identifier exists.
+        sqlalchemy.exc.SQLAlchemyError: If the database query fails.
+    """
+    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
+
+    if not postcard:
+        raise PostcardNotFoundException()
+
+    return postcard.image_path
+
+
 def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
     """
     Delete a postcard by its identifier.

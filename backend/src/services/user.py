@@ -112,6 +112,29 @@ def get_user_by_id(db: Session, user_id: int) -> UserResponse:
     return _to_user_response_(db_user)
 
 
+def get_user_profile_pic_path(db: Session, user_id: int) -> str:
+    """
+    Retrieve an user profile pic path by its identifier.
+
+    Args:
+        db: Active database session.
+        user_id: Identifier of the user whose profile pic path to retrieve.
+
+    Returns:
+        The requested user profile pic path, if exists.
+
+    Raises:
+        PostcardNotFoundException: If no user with the given identifier exists.
+        sqlalchemy.exc.SQLAlchemyError: If the database query fails.
+    """
+    user = repository_get_user_by_id(db=db, user_id=user_id)
+
+    if not user:
+        raise UserNotFoundException()
+
+    return user.profile_image_path
+
+
 def delete_user_by_id(db: Session, user_id: int) -> UserResponse:
     """
     Delete a user by its identifier.

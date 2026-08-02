@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
@@ -18,6 +18,7 @@ from src.services.postcard import (
     create_postcard,
     delete_postcard,
     get_postcard_by_id,
+    get_postcard_image_path,
     get_postcards,
     update_postcard,
 )
@@ -101,14 +102,11 @@ def retrieve_postcard_by_id(postcard_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def get_profile_pic(postcard_id: int, db: Session = Depends(get_db)):
-    postcard = get_postcard_by_id(postcard_id=postcard_id, db=db)
-
-    if postcard.image_path is None:
-        raise HTTPException(status_code=404, detail="Postcard image not found.")
+def get_postcard_image(postcard_id: int, db: Session = Depends(get_db)):
+    postcard_local_path = get_postcard_image_path(postcard_id=postcard_id, db=db)
 
     return FileResponse(
-        BASE_STORAGE_FOLDER / postcard.image_path,
+        BASE_STORAGE_FOLDER / postcard_local_path,
         media_type="image/jpeg",
     )
 

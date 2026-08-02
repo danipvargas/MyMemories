@@ -10,7 +10,6 @@ from src.models.postcard import DatePrecision
 class PostcardResponse(BaseModel):
     id: int
     user_id: int
-    image_path: str
     adquisition_date: date
     adquisition_date_precision: DatePrecision
     country: str
