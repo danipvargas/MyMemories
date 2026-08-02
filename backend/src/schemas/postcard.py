@@ -14,8 +14,8 @@ class PostcardResponse(BaseModel):
     adquisition_date: date
     adquisition_date_precision: DatePrecision
     country: str
-    city: str
     coordinates: tuple[float, float]
+    city: str | None = None
     region: str | None = None
     description: str | None = None
 

@@ -25,7 +25,7 @@ from src.repository.user import get_users as repository_get_users
 from src.repository.user import update_user as repository_update_user
 from src.schemas.user import UserCreate, UserResponse, UserUpdate
 from src.services.authentication import hash_password, validate_user_password
-from src.services.image import process_and_save_profile_pic
+from src.services.image import delete_image, process_and_save_profile_pic
 
 
 def _to_user_response_(user: User) -> UserResponse:
@@ -132,6 +132,8 @@ def delete_user_by_id(db: Session, user_id: int) -> UserResponse:
     if not deleted_user:
         raise UserNotFoundException()
 
+    delete_image(relative_path=deleted_user.profile_image_path)
+
     return _to_user_response_(deleted_user)
 
 
@@ -200,16 +202,19 @@ def update_user(
     update_data.pop("old_password", None)
     update_data.pop("new_password", None)
 
-    profile_image_path = None
-
     if new_profile_pic is not None:
-        profile_image_path = process_and_save_profile_pic(image=new_profile_pic)
+        new_profile_image_path = process_and_save_profile_pic(image=new_profile_pic)
+    else:
+        new_profile_image_path = None
 
-    return _to_user_response_(
-        repository_update_user(
-            db=db,
-            user=user,
-            update_data=update_data,
-            new_profile_pic_path=profile_image_path,
-        )
+    updated_user = repository_update_user(
+        db=db,
+        user=user,
+        update_data=update_data,
+        new_profile_pic_path=new_profile_image_path,
     )
+
+    if new_profile_image_path is not None:
+        delete_image(relative_path=user.profile_image_path)
+
+    return _to_user_response_(updated_user)

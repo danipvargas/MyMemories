@@ -19,7 +19,7 @@ from src.schemas.postcard import (
     PostcardUpdate,
     SortOptions,
 )
-from src.services.image import process_and_save_postcard
+from src.services.image import delete_image, process_and_save_postcard
 
 
 def _to_postcard_response_(db_postcard: Postcard) -> PostcardResponse:
@@ -156,6 +156,8 @@ def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
     if not deleted_postcard:
         raise PostcardNotFoundException()
 
+    delete_image(relative_path=delete_postcard.image_path)
+
     return _to_postcard_response_(deleted_postcard)
 
 
@@ -190,17 +192,19 @@ def update_postcard(
         exclude_unset=True,
         exclude_none=True,
     )
-
-    postcard_image_path = None
-
     if new_postcard_image is not None:
-        postcard_image_path = process_and_save_postcard(image=new_postcard_image)
+        new_image_path = process_and_save_postcard(new_postcard_image)
+    else:
+        new_image_path = None
 
-    return _to_postcard_response_(
-        repository_update_postcard(
-            db=db,
-            postcard=postcard,
-            update_data=update_data,
-            new_postcard_image_path=postcard_image_path,
-        )
+    updated_postcard = repository_update_postcard(
+        db=db,
+        postcard=postcard,
+        update_data=update_data,
+        new_postcard_image_path=new_image_path,
     )
+
+    if new_image_path is not None:
+        delete_image(postcard.image_path)
+
+    return _to_postcard_response_(updated_postcard)

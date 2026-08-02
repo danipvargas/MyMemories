@@ -6,6 +6,9 @@ services:
     ports:
       - "5432:5432"
 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
     secrets:
       - postgres_user
       - postgres_password
@@ -27,6 +30,10 @@ services:
 
     ports:
       - "8000:8000"
+
+    volumes:
+      - ./storage/images:/app/storage/images:Z
+      # - backend_images:/app/storage/images
 
     secrets:
       - postgres_user
@@ -62,3 +69,7 @@ secrets:
 
   postgres_db:
     file: ./storage/secrets/postgres_database.txt
+
+volumes:
+  postgres_data:
+  # backend_images:

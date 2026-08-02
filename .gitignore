@@ -9,3 +9,6 @@ __pycache__/
 *.pyc
 
 .env
+
+storage/images/
+storage/secrets/
