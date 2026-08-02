@@ -178,3 +178,12 @@ def delete_image(relative_path: str):
 
     if filepath.exists():
         filepath.unlink()
+
+
+def get_image(relative_path: str) -> Path:
+    filepath = BASE_STORAGE_FOLDER / relative_path
+
+    if not filepath.is_file():
+        raise FileNotFoundError(relative_path)
+
+    return filepath

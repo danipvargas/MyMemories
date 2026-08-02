@@ -1,6 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.database import get_db
@@ -12,6 +13,7 @@ from src.schemas.postcard import (
     PostcardUpdate,
     SortOptions,
 )
+from src.services.image import BASE_STORAGE_FOLDER
 from src.services.postcard import (
     create_postcard,
     delete_postcard,
@@ -86,6 +88,29 @@ def read_postcards(
 )
 def retrieve_postcard_by_id(postcard_id: int, db: Session = Depends(get_db)):
     return get_postcard_by_id(postcard_id=postcard_id, db=db)
+
+
+@router.get(
+    "/{postcard_id}/image",
+    status_code=status.HTTP_200_OK,
+    summary="Download postcard image.",
+    description=("Download postcard image using the path stored on the database."),
+    responses={
+        200: {"description": "Postcard image successfully retrieved."},
+        404: {"description": "Postcard or image not found"},
+        500: {"description": "Unexpected server error."},
+    },
+)
+def get_profile_pic(postcard_id: int, db: Session = Depends(get_db)):
+    postcard = get_postcard_by_id(postcard_id=postcard_id, db=db)
+
+    if postcard.image_path is None:
+        raise HTTPException(status_code=404, detail="Postcard image not found.")
+
+    return FileResponse(
+        BASE_STORAGE_FOLDER / postcard.image_path,
+        media_type="image/jpeg",
+    )
 
 
 @router.delete(

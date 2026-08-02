@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.database import get_db
 from src.schemas.user import UserCreate, UserResponse, UserUpdate
+from src.services.image import BASE_STORAGE_FOLDER
 from src.services.user import (
     create_user,
     delete_user_by_id,
@@ -68,6 +70,29 @@ def read_users(db: Session = Depends(get_db)):
 )
 def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db)):
     return get_user_by_id(user_id=user_id, db=db)
+
+
+@router.get(
+    "/{user_id}/profile-pic",
+    status_code=status.HTTP_200_OK,
+    summary="Download user profile picture.",
+    description=("Download user profile image using the path stored on the database."),
+    responses={
+        200: {"description": "User profile picture successfully deleted."},
+        404: {"description": "User or profile picture not found"},
+        500: {"description": "Unexpected server error."},
+    },
+)
+def get_profile_pic(user_id: int, db: Session = Depends(get_db)):
+    user = get_user_by_id(user_id=user_id, db=db)
+
+    if user.profile_image_path is None:
+        raise HTTPException(status_code=404, detail="User has no profile picture")
+
+    return FileResponse(
+        BASE_STORAGE_FOLDER / user.profile_image_path,
+        media_type="image/jpeg",
+    )
 
 
 @router.delete(
