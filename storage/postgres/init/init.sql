@@ -22,6 +22,6 @@ CREATE TABLE postcards (
     country VARCHAR(50) NOT NULL,
     city VARCHAR(50),
     region VARCHAR(50),
-    coordinates geometry(Point, 4326) NOT NULL,
+    coordinates geography(Point, 4326) NOT NULL,
     description TEXT
 );
