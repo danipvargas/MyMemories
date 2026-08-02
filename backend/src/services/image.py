@@ -53,12 +53,12 @@ def process_and_save_postcard(image: UploadFile) -> tuple[str, str]:
     img = load_image(image)
 
     preview_img = resize_to_fit(
-        img.copy(),
+        img,
         POSTCARD_MAX_DIMENSION,
     )
 
     thumbnail_img = resize_to_fit(
-        img.copy(),
+        img,
         THUMBNAIL_MAX_DIMENSION,
     )
 
@@ -139,12 +139,12 @@ def resize_to_fit(
     img: Image.Image,
     max_dimension: int,
 ) -> Image.Image:
-    img.thumbnail(
+    resized = img.copy()
+    resized.thumbnail(
         (max_dimension, max_dimension),
         Image.Resampling.LANCZOS,
     )
-
-    return img
+    return resized
 
 
 def generate_filename() -> str:
