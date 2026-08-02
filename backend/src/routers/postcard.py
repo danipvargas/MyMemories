@@ -19,6 +19,7 @@ from src.services.postcard import (
     delete_postcard,
     get_postcard_by_id,
     get_postcard_image_path,
+    get_postcard_thumbnail_path,
     get_postcards,
     update_postcard,
 )
@@ -107,6 +108,26 @@ def get_postcard_image(postcard_id: int, db: Session = Depends(get_db)):
 
     return FileResponse(
         BASE_STORAGE_FOLDER / postcard_local_path,
+        media_type="image/jpeg",
+    )
+
+
+@router.get(
+    "/{postcard_id}/thumbnail",
+    status_code=status.HTTP_200_OK,
+    summary="Download postcard thumbnail.",
+    description=("Download postcard thumbnail using the path stored on the database."),
+    responses={
+        200: {"description": "Postcard image successfully retrieved."},
+        404: {"description": "Postcard or image not found"},
+        500: {"description": "Unexpected server error."},
+    },
+)
+def get_postcard_thumbnail(postcard_id: int, db: Session = Depends(get_db)):
+    thumbnail_local_path = get_postcard_thumbnail_path(postcard_id=postcard_id, db=db)
+
+    return FileResponse(
+        BASE_STORAGE_FOLDER / thumbnail_local_path,
         media_type="image/jpeg",
     )
 

@@ -15,6 +15,7 @@ BASE_STORAGE_FOLDER = Path("/app/storage/images")
 
 PROFILE_FOLDER = BASE_STORAGE_FOLDER / "profiles"
 POSTCARD_FOLDER = BASE_STORAGE_FOLDER / "postcards"
+THUMBNAIL_FOLDER = BASE_STORAGE_FOLDER / "thumbnails"
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
@@ -25,6 +26,7 @@ MAX_PIXELS = 50_000_000  # 50 MP
 # Stored image configuration
 PROFILE_SIZE = 512
 POSTCARD_MAX_DIMENSION = 2500
+THUMBNAIL_MAX_DIMENSION = 200
 
 TARGET_IMAGE_SIZE = 500 * 1024  # 500 kB
 MIN_JPEG_QUALITY = 60
@@ -47,18 +49,30 @@ def process_and_save_profile_pic(image: UploadFile) -> str:
     )
 
 
-def process_and_save_postcard(image: UploadFile) -> str:
+def process_and_save_postcard(image: UploadFile) -> tuple[str, str]:
     img = load_image(image)
 
-    img = resize_to_fit(
-        img,
+    preview_img = resize_to_fit(
+        img.copy(),
         POSTCARD_MAX_DIMENSION,
     )
 
-    return save_image(
-        img,
+    thumbnail_img = resize_to_fit(
+        img.copy(),
+        THUMBNAIL_MAX_DIMENSION,
+    )
+
+    preview_path = save_image(
+        preview_img,
         POSTCARD_FOLDER,
     )
+
+    thumbnail_path = save_image(
+        thumbnail_img,
+        THUMBNAIL_FOLDER,
+    )
+
+    return preview_path, thumbnail_path
 
 
 def load_image(upload: UploadFile) -> Image.Image:

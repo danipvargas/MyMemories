@@ -30,7 +30,9 @@ class Postcard(Base):
 
     user: Mapped["User"] = relationship(back_populates="postcards")
 
-    image_path: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    image_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
+
+    thumbnail_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
 
     adquisition_date: Mapped[date] = mapped_column(Date, nullable=False)
 
