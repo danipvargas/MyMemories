@@ -11,7 +11,14 @@ from src.repository.postcard import get_postcard_by_id as repository_get_postcar
 from src.repository.postcard import get_postcards as repository_get_postcards
 from src.repository.postcard import update_postcard as repository_update_postcard
 from src.repository.user import exists_user_by_id
-from src.schemas.postcard import PostcardCreate, PostcardResponse, PostcardUpdate
+from src.schemas.base import Pagination
+from src.schemas.postcard import (
+    PostcardCreate,
+    PostcardFilters,
+    PostcardResponse,
+    PostcardUpdate,
+    SortOptions,
+)
 from src.services.image import process_and_save_postcard
 
 
@@ -81,13 +88,16 @@ def create_postcard(
 
 
 def get_postcards(
-    db: Session,
+    db: Session, filters: PostcardFilters, sorting: SortOptions, pagination: Pagination
 ) -> list[PostcardResponse]:
     """
     Retrieve all stored postcards.
 
     Args:
         db: Active database session.
+        filters: Different optional filters to select which postcards return.
+        sorting: Parameter to set how to order the postcards.
+        pagination: Pagination parameters.
 
     Returns:
         A list containing all postcards.
@@ -95,7 +105,12 @@ def get_postcards(
     Raises:
         sqlalchemy.exc.SQLAlchemyError: If the database query fails.
     """
-    return [_to_postcard_response_(dbp) for dbp in repository_get_postcards(db=db)]
+    return [
+        _to_postcard_response_(db_postcard)
+        for db_postcard in repository_get_postcards(
+            db=db, filters=filters, sorting=sorting, pagination=pagination
+        )
+    ]
 
 
 def get_postcard_by_id(db: Session, postcard_id: int) -> PostcardResponse:

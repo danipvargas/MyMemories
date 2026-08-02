@@ -33,7 +33,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 )
 def add_user(
     user: UserCreate = Depends(UserCreate.as_form),
-    profile_image: UploadFile = File(...),
+    profile_image: UploadFile | None = File(None),
     db: Session = Depends(get_db),
 ):
     return create_user(db=db, new_user=user, profile_image=profile_image)

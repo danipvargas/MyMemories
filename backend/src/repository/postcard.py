@@ -6,7 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src.models.postcard import Postcard
-from src.schemas.postcard import PostcardCreate, PostcardFilters
+from src.schemas.base import Pagination
+from src.schemas.postcard import PostcardCreate, PostcardFilters, SortOptions
 
 
 def create_postcard(
@@ -100,12 +101,17 @@ def update_postcard(
 def get_postcards(
     db: Session,
     filters: PostcardFilters,
+    sorting: SortOptions,
+    pagination: Pagination,
 ) -> list[Postcard]:
     """
     Retrieve all postcards from the database matching the given filters .
 
     Args:
         db: Active database session.
+        filters: Different optional filters to select which postcards return.
+        sorting: Parameter to set how to order the postcards.
+        pagination: Pagination parameters.
 
     Returns:
         A list containing all stored postcards.
@@ -151,6 +157,20 @@ def get_postcards(
 
     if conditions:
         stmt = stmt.where(*conditions)
+
+    sort_columns = {
+        "adquisition_date": Postcard.adquisition_date,
+        "country": Postcard.country,
+        "city": Postcard.city,
+        "region": Postcard.region,
+    }
+
+    column = sort_columns[sorting.sort_by]
+
+    stmt = stmt.order_by(column.desc() if sorting.descending else column.asc())
+
+    offset = (pagination.page - 1) * pagination.page_size
+    stmt = stmt.offset(offset).limit(pagination.page_size)
 
     return db.scalars(stmt).all()
 

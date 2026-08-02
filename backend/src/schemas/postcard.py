@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Literal
 
 from fastapi import Form
 from pydantic import BaseModel
@@ -100,3 +101,13 @@ class PostcardFilters(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     radius_km: float | None = None
+
+
+class SortOptions(BaseModel):
+    sort_by: Literal[
+        "adquisition_date",
+        "country",
+        "city",
+        "region",
+    ] = "adquisition_date"
+    descending: bool = False

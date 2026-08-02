@@ -1,8 +1,17 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.orm import Session
 
 from src.database import get_db
-from src.schemas.postcard import PostcardCreate, PostcardResponse, PostcardUpdate
+from src.schemas.base import Pagination
+from src.schemas.postcard import (
+    PostcardCreate,
+    PostcardFilters,
+    PostcardResponse,
+    PostcardUpdate,
+    SortOptions,
+)
 from src.services.postcard import (
     create_postcard,
     delete_postcard,
@@ -45,15 +54,22 @@ def add_postcard(
     "/",
     response_model=list[PostcardResponse],
     status_code=status.HTTP_200_OK,
-    summary="List all postcards",
-    description=("Lists all existing postcards in the database."),
+    summary="List all postcards matching the given filters",
+    description=(
+        "Lists all existing postcards in the database matching the given filters."
+    ),
     responses={
         200: {"description": "Postcards successfully listed."},
         500: {"description": "Unexpected server error."},
     },
 )
-def read_postcards(db: Session = Depends(get_db)):
-    return get_postcards(db)
+def read_postcards(
+    filters: Annotated[PostcardFilters, Depends()],
+    sorting: Annotated[SortOptions, Depends()],
+    pagination: Annotated[Pagination, Depends()],
+    db: Session = Depends(get_db),
+):
+    return get_postcards(db, filters=filters, sorting=sorting, pagination=pagination)
 
 
 @router.get(

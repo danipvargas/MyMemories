@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 CREATE TYPE date_precision AS ENUM (
     'YEAR',
     'MONTH',
