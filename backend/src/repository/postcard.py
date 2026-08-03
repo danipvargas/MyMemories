@@ -77,6 +77,7 @@ def update_postcard(
     postcard: Postcard,
     update_data: dict[str, Any],
     new_postcard_image_path: str | None = None,
+    new_postcard_cover_path: str | None = None,
 ) -> Postcard:
     """
     Update the fields of an existing postcard.
@@ -86,6 +87,7 @@ def update_postcard(
         postcard: Postcard instance to update.
         update_data: Dictionary containing the fields and values to update.
         new_postcard_image_path: New image path to assign to the postcard, if provided.
+        new_postcard_cover_path: New cover path to assign to the postcard, if provided.
 
     Returns:
         The updated postcard.
@@ -95,6 +97,9 @@ def update_postcard(
 
     if new_postcard_image_path is not None:
         postcard.image_path = new_postcard_image_path
+
+    if new_postcard_cover_path is not None:
+        postcard.cover_path = new_postcard_cover_path
 
     db.commit()
     db.refresh(postcard)

@@ -172,6 +172,7 @@ def patch_postcard(
     postcard_id: int,
     modified_fields: PostcardUpdate = Depends(PostcardUpdate.as_form),
     postcard_image: UploadFile | None = File(None),
+    postcard_cover: UploadFile | None = File(None),
     db: Session = Depends(get_db),
 ):
     return update_postcard(
@@ -179,4 +180,5 @@ def patch_postcard(
         postcard_id=postcard_id,
         modified_fields=modified_fields,
         new_postcard_image=postcard_image,
+        new_postcard_cover=postcard_cover,
     )

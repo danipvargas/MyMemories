@@ -73,7 +73,7 @@ class PostcardUpdate(BaseModel):
     @classmethod
     def as_form(
         cls,
-        title: str = Form(...),
+        title: str = Form(None),
         adquisition_date: date | None = Form(None),
         adquisition_date_precision: DatePrecision | None = Form(None),
         country: str | None = Form(None),

@@ -220,6 +220,7 @@ def update_postcard(
     postcard_id: int,
     modified_fields: PostcardUpdate,
     new_postcard_image: UploadFile | None = None,
+    new_postcard_cover: UploadFile | None = None,
 ) -> PostcardResponse:
     """
     Update an existing postcard.
@@ -229,6 +230,7 @@ def update_postcard(
         postcard_id: Identifier of the postcard to update.
         modified_fields: Fields to update.
         new_postcard_image: New postcard image, if provided.
+        new_postcard_cover: New postcard cover, if provided.
 
     Returns:
         The updated postcard.
@@ -251,11 +253,17 @@ def update_postcard(
     else:
         new_image_path = None
 
+    if new_postcard_cover is not None:
+        new_cover_path = process_and_save_cover(new_postcard_cover)
+    else:
+        new_cover_path = None
+
     updated_postcard = repository_update_postcard(
         db=db,
         postcard=postcard,
         update_data=update_data,
         new_postcard_image_path=new_image_path,
+        new_postcard_cover_path=new_cover_path,
     )
 
     if new_image_path is not None:
