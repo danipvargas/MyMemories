@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from src.config import ALLOWED_ORIGINS
 from src.database import Base, engine
 from src.exceptions.base import MyMemoriesError
 from src.routers.postcard import router as postcards_router
@@ -21,6 +23,14 @@ app = FastAPI(
             "filtered search focused ones.",
         },
     ],
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(users_router)
