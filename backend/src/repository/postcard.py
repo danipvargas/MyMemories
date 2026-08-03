@@ -14,7 +14,7 @@ def create_postcard(
     db: Session,
     new_postcard: PostcardCreate,
     postcard_image_path: str,
-    thumbnail_path: str,
+    cover_path: str,
 ) -> Postcard:
     """
     Create a new postcard and store it in the database.
@@ -29,7 +29,7 @@ def create_postcard(
     """
     db_postcard = Postcard(
         image_path=postcard_image_path,
-        thumbnail_path=thumbnail_path,
+        cover_path=cover_path,
         user_id=new_postcard.user_id,
         adquisition_date=new_postcard.adquisition_date,
         adquisition_date_precision=new_postcard.adquisition_date_precision,

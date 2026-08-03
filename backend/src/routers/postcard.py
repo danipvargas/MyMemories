@@ -18,8 +18,8 @@ from src.services.postcard import (
     create_postcard,
     delete_postcard,
     get_postcard_by_id,
+    get_postcard_cover_path,
     get_postcard_image_path,
-    get_postcard_thumbnail_path,
     get_postcards,
     update_postcard,
 )
@@ -47,10 +47,14 @@ router = APIRouter(prefix="/postcards", tags=["Postcards"])
 def add_postcard(
     new_postcard: PostcardCreate = Depends(PostcardCreate.as_form),
     postcard_image: UploadFile = File(...),
+    postcard_cover: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
     return create_postcard(
-        db=db, new_postcard=new_postcard, postcard_image=postcard_image
+        db=db,
+        new_postcard=new_postcard,
+        postcard_image=postcard_image,
+        cover_image=postcard_cover,
     )
 
 
@@ -113,21 +117,21 @@ def get_postcard_image(postcard_id: int, db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/{postcard_id}/thumbnail",
+    "/{postcard_id}/cover",
     status_code=status.HTTP_200_OK,
-    summary="Download postcard thumbnail.",
-    description=("Download postcard thumbnail using the path stored on the database."),
+    summary="Download postcard cover.",
+    description=("Download postcard cover using the path stored on the database."),
     responses={
         200: {"description": "Postcard image successfully retrieved."},
         404: {"description": "Postcard or image not found"},
         500: {"description": "Unexpected server error."},
     },
 )
-def get_postcard_thumbnail(postcard_id: int, db: Session = Depends(get_db)):
-    thumbnail_local_path = get_postcard_thumbnail_path(postcard_id=postcard_id, db=db)
+def get_postcard_cover(postcard_id: int, db: Session = Depends(get_db)):
+    cover_local_path = get_postcard_cover_path(postcard_id=postcard_id, db=db)
 
     return FileResponse(
-        BASE_STORAGE_FOLDER / thumbnail_local_path,
+        BASE_STORAGE_FOLDER / cover_local_path,
         media_type="image/jpeg",
     )
 

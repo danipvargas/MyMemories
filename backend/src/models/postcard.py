@@ -32,7 +32,7 @@ class Postcard(Base):
 
     image_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
 
-    thumbnail_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
+    cover_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
 
     title: Mapped[str] = mapped_column(String(60), unique=False, nullable=False)
 

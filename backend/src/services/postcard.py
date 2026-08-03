@@ -19,7 +19,11 @@ from src.schemas.postcard import (
     PostcardUpdate,
     SortOptions,
 )
-from src.services.image import delete_image, process_and_save_postcard
+from src.services.image import (
+    delete_image,
+    process_and_save_cover,
+    process_and_save_postcard,
+)
 
 
 def _to_postcard_response_(db_postcard: Postcard) -> PostcardResponse:
@@ -55,6 +59,7 @@ def create_postcard(
     db: Session,
     new_postcard: PostcardCreate,
     postcard_image: UploadFile,
+    postcard_cover: UploadFile,
 ) -> PostcardResponse:
     """
     Create a new postcard for an existing user.
@@ -63,6 +68,7 @@ def create_postcard(
         db: Active database session.
         new_postcard: Data used to create the postcard.
         postcard_image: Uploaded postcard image.
+        postcard_cover: Uploaded postcard cover.
 
     Returns:
         The created postcard.
@@ -76,14 +82,15 @@ def create_postcard(
             f"No user with user_id={new_postcard.user_id} found."
         )
 
-    image_path, thumbnail_path = process_and_save_postcard(postcard_image)
+    image_path = process_and_save_postcard(postcard_image)
+    cover_path = process_and_save_cover(postcard_cover)
 
     return _to_postcard_response_(
         repository_create_postcard(
             db=db,
             new_postcard=new_postcard,
             postcard_image_path=image_path,
-            thumbnail_path=thumbnail_path,
+            cover_path=cover_path,
         )
     )
 
@@ -160,16 +167,16 @@ def get_postcard_image_path(db: Session, postcard_id: int) -> str:
     return postcard.image_path
 
 
-def get_postcard_thumbnail_path(db: Session, postcard_id: int) -> str:
+def get_postcard_cover_path(db: Session, postcard_id: int) -> str:
     """
-    Retrieve a postcard thumbnail path by its identifier.
+    Retrieve a postcard cover path by its identifier.
 
     Args:
         db: Active database session.
-        postcard_id: Identifier of the postcard whose thumbnail to retrieve.
+        postcard_id: Identifier of the postcard whose cover to retrieve.
 
     Returns:
-        The requested postcard thumbnail path, if exists.
+        The requested postcard cover path, if exists.
 
     Raises:
         PostcardNotFoundException: If no postcard with the given identifier exists.
@@ -180,7 +187,7 @@ def get_postcard_thumbnail_path(db: Session, postcard_id: int) -> str:
     if not postcard:
         raise PostcardNotFoundException()
 
-    return postcard.thumbnail_path
+    return postcard.cover_path
 
 
 def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
