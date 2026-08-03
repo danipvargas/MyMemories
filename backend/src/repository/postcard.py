@@ -126,6 +126,9 @@ def get_postcards(
     if filters.user_id:
         conditions.append(Postcard.user_id == filters.user_id)
 
+    if filters.title:
+        conditions.append(Postcard.title.ilike(f"%{filters.title}%"))
+
     if filters.country:
         conditions.append(Postcard.country.ilike(f"%{filters.country}%"))
 

@@ -34,6 +34,8 @@ class Postcard(Base):
 
     thumbnail_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
 
+    title: Mapped[str] = mapped_column(String(60), unique=False, nullable=False)
+
     adquisition_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     adquisition_date_precision: Mapped[DatePrecision] = mapped_column(

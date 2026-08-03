@@ -10,6 +10,7 @@ from src.models.postcard import DatePrecision
 class PostcardResponse(BaseModel):
     id: int
     user_id: int
+    title: str
     adquisition_date: date
     adquisition_date_precision: DatePrecision
     country: str
@@ -21,6 +22,7 @@ class PostcardResponse(BaseModel):
 
 class PostcardCreate(BaseModel):
     user_id: int
+    title: str
     adquisition_date: date
     adquisition_date_precision: DatePrecision
     country: str
@@ -34,6 +36,7 @@ class PostcardCreate(BaseModel):
     def as_form(
         cls,
         user_id: int = Form(...),
+        title: str = Form(...),
         adquisition_date: date = Form(...),
         adquisition_date_precision: DatePrecision = Form(...),
         country: str = Form(...),
@@ -57,6 +60,7 @@ class PostcardCreate(BaseModel):
 
 
 class PostcardUpdate(BaseModel):
+    title: str | None = None
     adquisition_date: date | None = None
     adquisition_date_precision: DatePrecision | None = None
     country: str | None = None
@@ -69,6 +73,7 @@ class PostcardUpdate(BaseModel):
     @classmethod
     def as_form(
         cls,
+        title: str = Form(...),
         adquisition_date: date | None = Form(None),
         adquisition_date_precision: DatePrecision | None = Form(None),
         country: str | None = Form(None),
@@ -92,6 +97,7 @@ class PostcardUpdate(BaseModel):
 
 class PostcardFilters(BaseModel):
     user_id: int | None = None
+    title: str | None = None
     start_date: date | None = None
     end_date: date | None = None
     country: str | None = None
