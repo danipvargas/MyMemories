@@ -150,12 +150,25 @@ def delete_user_by_id(db: Session, user_id: int) -> UserResponse:
         UserNotFoundException: If no user with the given identifier exists.
         sqlalchemy.exc.SQLAlchemyError: If the database operation fails.
     """
+    user = repository_get_user_by_id(db=db, user_id=user_id)
+
+    if user is None:
+        raise UserNotFoundException()
+
+    postcard_image_paths = [
+        (postcard.image_path, postcard.cover_path) for postcard in user.postcards
+    ]
+
     deleted_user = repository_delete_user(db=db, user_id=user_id)
 
     if not deleted_user:
         raise UserNotFoundException()
 
     delete_image(relative_path=deleted_user.profile_image_path)
+
+    for image_path, cover_path in postcard_image_paths:
+        delete_image(relative_path=image_path)
+        delete_image(relative_path=cover_path)
 
     return _to_user_response_(deleted_user)
 

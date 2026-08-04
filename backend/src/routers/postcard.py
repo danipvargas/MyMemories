@@ -54,7 +54,7 @@ def add_postcard(
         db=db,
         new_postcard=new_postcard,
         postcard_image=postcard_image,
-        cover_image=postcard_cover,
+        postcard_cover=postcard_cover,
     )
 
 

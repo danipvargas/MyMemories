@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 WORKDIR /src
 
@@ -10,7 +10,8 @@ RUN uv sync --frozen
 COPY src ./src
 
 RUN mkdir -p /app/storage/images/profiles \
-    && mkdir -p /app/storage/images/postcard
+    && mkdir -p /app/storage/images/postcards \
+    && mkdir -p /app/storage/images/covers
 
 EXPOSE 8000
 

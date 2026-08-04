@@ -31,6 +31,7 @@ def create_postcard(
         image_path=postcard_image_path,
         cover_path=cover_path,
         user_id=new_postcard.user_id,
+        title=new_postcard.title,
         adquisition_date=new_postcard.adquisition_date,
         adquisition_date_precision=new_postcard.adquisition_date_precision,
         country=new_postcard.country,

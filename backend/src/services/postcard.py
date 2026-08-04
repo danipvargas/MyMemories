@@ -1,8 +1,12 @@
 from fastapi import UploadFile
+from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
 from sqlalchemy.orm import Session
 
-from src.exceptions.postcard import PostcardNotFoundException
+from src.exceptions.postcard import (
+    InvalidPostcardCoordinatesException,
+    PostcardNotFoundException,
+)
 from src.exceptions.user import UserNotFoundException
 from src.models.postcard import Postcard
 from src.repository.postcard import create_postcard as repository_create_postcard
@@ -44,7 +48,7 @@ def _to_postcard_response_(db_postcard: Postcard) -> PostcardResponse:
     return PostcardResponse(
         id=db_postcard.id,
         user_id=db_postcard.user_id,
-        image_path=db_postcard.image_path,
+        title=db_postcard.title,
         adquisition_date=db_postcard.adquisition_date,
         adquisition_date_precision=db_postcard.adquisition_date_precision,
         country=db_postcard.country,
@@ -210,7 +214,8 @@ def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
     if not deleted_postcard:
         raise PostcardNotFoundException()
 
-    delete_image(relative_path=delete_postcard.image_path)
+    delete_image(relative_path=deleted_postcard.image_path)
+    delete_image(relative_path=deleted_postcard.cover_path)
 
     return _to_postcard_response_(deleted_postcard)
 
@@ -244,10 +249,25 @@ def update_postcard(
     if postcard is None:
         raise PostcardNotFoundException()
 
+    old_image_path = postcard.image_path
+    old_cover_path = postcard.cover_path
+
     update_data = modified_fields.model_dump(
         exclude_unset=True,
         exclude_none=True,
     )
+
+    latitude = update_data.pop("latitude", None)
+    longitude = update_data.pop("longitude", None)
+
+    if (latitude is None) != (longitude is None):
+        raise InvalidPostcardCoordinatesException()
+
+    if latitude is not None and longitude is not None:
+        update_data["coordinates"] = WKTElement(
+            f"POINT({longitude} {latitude})",
+            srid=4326,
+        )
     if new_postcard_image is not None:
         new_image_path = process_and_save_postcard(new_postcard_image)
     else:
@@ -267,6 +287,9 @@ def update_postcard(
     )
 
     if new_image_path is not None:
-        delete_image(postcard.image_path)
+        delete_image(old_image_path)
+
+    if new_cover_path is not None:
+        delete_image(old_cover_path)
 
     return _to_postcard_response_(updated_postcard)

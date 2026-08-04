@@ -3,6 +3,7 @@
 .mypy_cache/
 .ruff_cache/
 .coverage
+.vscode
 htmlcov/
 
 __pycache__/

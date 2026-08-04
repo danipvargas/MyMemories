@@ -24,4 +24,8 @@ class User(Base):
         String(50), unique=True, nullable=False
     )
 
-    postcards: Mapped[list["Postcard"]] = relationship(back_populates="user")
+    postcards: Mapped[list["Postcard"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )

@@ -26,7 +26,10 @@ class Postcard(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
 
     user: Mapped["User"] = relationship(back_populates="postcards")
 
@@ -36,7 +39,7 @@ class Postcard(Base):
 
     title: Mapped[str] = mapped_column(String(60), unique=False, nullable=False)
 
-    adquisition_date: Mapped[date] = mapped_column(Date, nullable=False)
+    adquisition_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     adquisition_date_precision: Mapped[DatePrecision] = mapped_column(
         SQLEnum(DatePrecision), nullable=False
