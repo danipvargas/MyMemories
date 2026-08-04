@@ -760,7 +760,7 @@ button:disabled {
   }
 
   .image-upload-card,
-  .form-section:first-of-type,
+  .details-section,
   .feedback,
   .save-button {
     grid-column: 1 / -1;
@@ -770,15 +770,15 @@ button:disabled {
     grid-column: 1 / -1;
   }
 
-  .form-section:first-of-type {
+  .details-section {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .form-section:first-of-type .section-heading,
-  .form-section:first-of-type .form-field:first-of-type,
-  .form-section:first-of-type .date-fields,
-  .form-section:first-of-type .form-field:last-of-type {
+  .details-section .section-heading,
+  .details-section .form-field:first-of-type,
+  .details-section .date-fields,
+  .details-section .form-field:last-of-type {
     grid-column: 1 / -1;
   }
 

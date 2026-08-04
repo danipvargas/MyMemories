@@ -9,7 +9,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --paper: #ffeabb;
+  --paper: #fff3d8;
   --surface: #fff6e3;
   --surface-hover: #fff0d0;
   --aged-paper: #d8c59b;

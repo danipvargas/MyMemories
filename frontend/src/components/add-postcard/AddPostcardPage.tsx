@@ -244,7 +244,10 @@ function AddPostcardPage() {
           />
         </section>
 
-        <section className="form-section" aria-labelledby="details-title">
+        <section
+          className="form-section details-section"
+          aria-labelledby="details-title"
+        >
           <div className="section-heading">
             <div>
               <p className="eyebrow">02 · Detalles</p>

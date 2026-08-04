@@ -21,7 +21,7 @@ The overall design is inspired by **old travel journals, vintage postcard albums
 
 | Role | Name | Hex |
 |------|------|------|
-| Background | Old Paper | `#FFEABB` |
+| Background | Old Paper | `#FFF3D8` |
 | Surface | Ivory | `#FFF6E3` |
 | Surface Hover | Light Cream | `#FFF0D0` |
 | Border | Aged Paper | `#D8C59B` |
@@ -63,7 +63,7 @@ The overall design is inspired by **old travel journals, vintage postcard albums
 
 ## Background
 
-- Color: `#FFEABB`
+- Color: `#FFF3D8`
 - Represents aged paper.
 - Used as the primary application background.
 

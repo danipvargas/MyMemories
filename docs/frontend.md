@@ -6,82 +6,101 @@ The application is designed as a digital photo album.
 
 Browsing images is the primary interaction.
 
-The interface should remain simple and require as few interactions as possible.
+The interface is Spanish, mobile-first, and responsive. The visual language is
+warm and paper-inspired, but the palette remains open to refinement during
+development.
 
 ---
 
 ## Navigation
 
-- On mobile version:
-    - Bottom navigation.
+The navigation is shared between mobile and desktop layouts.
 
-        - Album
-        - Add
-        - Map
+- Album
+- Add
+- Map
 
-    - Upper navigation.
+The Add screen is currently implemented. Album and Map currently display a
+Coming soon state.
 
-        - Profile (probably on the top right corner with a simple menu)
+The admin profile remains visible in the upper navigation. Logout is hidden in
+the current MVP.
 
-- On web version:
-    - Lateral navigation: The same options appear now at the left, while the rest of the page will
-      show the gallery, add option, map, etc.
-
-    - The profile button maintains on the top right corner, as usual in webpages.
-
+On mobile, navigation is shown at the bottom. On larger screens, it becomes a
+lateral navigation rail.
 
 ---
 
 ## Main screens
 
-Album with dynamic filter:
+### Album
 
-- By default, browse all postcards.
-- Includes option to search and filter.
-- When click on a postcard, it opens a new page opening the complete image (not the thumbnail)
-  and display the details of the postcards. This will be also de place to edit the postcard.
+The album is not implemented yet.
 
+The planned album will browse postcards, support search and filters, and open a
+postcard detail page showing the original image and metadata.
 
-Add postcard:
+### Add postcard
 
-- Create a new postcard.
-- The frontend must manage the postcard crop, rotate, and the thumbnail proportion crop.
-  Resize is backend responsible.
+The current screen supports the complete create flow for the MVP:
 
-Map:
+- Select a JPG, JPEG, or PNG image from the gallery or camera.
+- Crop and rotate the original image using a free aspect ratio.
+- Crop a separate cover with a fixed 3:2 aspect ratio.
+- Select the acquisition date by year, month, and day. The frontend derives
+  the API date precision from the fields selected.
+- Select a country through a searchable Spanish combobox. The API receives the
+  ISO Alpha-2 code.
+- Enter optional city, region, and description values.
+- Select latitude and longitude by clicking an OpenStreetMap map centered on
+  Spain. No geocoding is performed.
+- Submit the original image and cover to the backend using the admin user with
+  `user_id=1`.
 
-- Display postcards geographically.
-- When zooming, the postcard must appear as a thumbnail, not a cluster with a number.
-- When click on a thumbnail, a page to display the information similar to the album one must appear.
-  The option to edit may be or not included here (to disscuss).
+The original image keeps the aspect ratio selected by the user. Only the cover
+uses a fixed aspect ratio for consistent album thumbnails.
 
-Profile:
+### Map
 
-- User information and statistics.
-- Option to logout.
-- Option to edit user personal information.
+The global map is not implemented in the MVP. The navigation entry currently
+shows Coming soon.
+
+The map used during postcard creation is the only active map flow for now.
+
+### Profile
+
+The first version only needs to display the admin user's information and
+profile image. Profile editing and password management are deferred.
 
 ---
 
-## Shared components (Open to change during development)
+## Shared components
 
-- Bottom navigation
-- Search bar
+- Bottom or lateral navigation
 - Page header
-- Postcard card
-- Country selector
+- Searchable country combobox with ISO Alpha-2 values and flags
+- Postcard image cropper
+- OpenStreetMap location picker
+- Feedback messages for loading, success, and errors
+
+---
+
+## Frontend integration
+
+- API base URL is configured with `VITE_API_BASE_URL`.
+- TanStack Query is used for API mutations and future server state.
+- The API currently uses the admin user with `user_id=1`.
+- Backend image errors are translated into Spanish feedback messages.
 
 ---
 
 ## Responsive design
 
-Primary target
+Mobile is the primary target. Desktop adapts the same functionality using a
+lateral navigation rail and wider form layout.
 
-Mobile.
-
-Desktop
-
-Responsive adaptation without changing functionality.
+Image cropping supports touch gestures on mobile and mouse interactions on
+desktop.
 
 ---
 
