@@ -12,6 +12,7 @@ type CropDialogProps = {
   title: string
   description: string
   aspect?: number
+  allowRotation: boolean
   onCancel: () => void
   onComplete: (file: File) => void
   onError: () => void
@@ -22,6 +23,7 @@ function CropDialog({
   title,
   description,
   aspect,
+  allowRotation,
   onCancel,
   onComplete,
   onError,
@@ -79,7 +81,9 @@ function CropDialog({
             src={imageUrl}
             className="advanced-cropper"
             stencilProps={aspect ? { aspectRatio: aspect } : undefined}
-            backgroundWrapperProps={{ rotateImage: { touch: true } }}
+            backgroundWrapperProps={
+              allowRotation ? { rotateImage: { touch: true } } : undefined
+            }
             onChange={() => undefined}
           />
         </div>
@@ -89,24 +93,26 @@ function CropDialog({
             Arrastra la imagen, pellizca para ampliar y usa las esquinas para
             ajustar el encuadre.
           </p>
-          <div className="rotation-controls">
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => cropperRef.current?.rotateImage(-90)}
-            >
-              <RotateCcw size={16} />
-              Girar izquierda
-            </button>
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={() => cropperRef.current?.rotateImage(90)}
-            >
-              <RotateCw size={16} />
-              Girar derecha
-            </button>
-          </div>
+          {allowRotation && (
+            <div className="rotation-controls">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => cropperRef.current?.rotateImage(-90)}
+              >
+                <RotateCcw size={16} />
+                Girar izquierda
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => cropperRef.current?.rotateImage(90)}
+              >
+                <RotateCw size={16} />
+                Girar derecha
+              </button>
+            </div>
+          )}
         </div>
 
         <footer className="crop-dialog-footer">

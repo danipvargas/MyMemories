@@ -259,7 +259,7 @@ function AddPostcardPage() {
               value={title}
               maxLength={60}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Por ejemplo, Atardecer en Lisboa"
+              placeholder="Por ejemplo, Atardecer en Ribadeo"
               required
             />
           </label>
@@ -283,7 +283,7 @@ function AddPostcardPage() {
                 value={city}
                 maxLength={50}
                 onChange={(event) => setCity(event.target.value)}
-                placeholder="Lisboa"
+                placeholder="Ribadeo"
               />
             </label>
             <label className="form-field">
@@ -293,7 +293,7 @@ function AddPostcardPage() {
                 value={region}
                 maxLength={50}
                 onChange={(event) => setRegion(event.target.value)}
-                placeholder="Lisboa"
+                placeholder="Galicia"
               />
             </label>
           </div>
@@ -357,6 +357,7 @@ function AddPostcardPage() {
               : "Elige el encuadre de la portada que aparecerá en el álbum."
           }
           aspect={cropStep === "cover" ? 3 / 2 : undefined}
+          allowRotation={cropStep === "original"}
           onCancel={handleCropCancel}
           onComplete={
             cropStep === "original"
