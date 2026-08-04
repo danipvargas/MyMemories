@@ -35,6 +35,17 @@ def create_postcard(
     return response.json()
 
 
+def test_admin_seed_is_available(client: httpx.Client):
+    user_response = client.get("/users/1")
+    profile_response = client.get("/users/1/profile-pic")
+
+    assert user_response.status_code == 200
+    assert user_response.json()["username"] == "danipvargas"
+    assert user_response.json()["email"] == "danipvargas@gmail.com"
+    assert profile_response.status_code == 200
+    assert profile_response.headers["content-type"] == "image/jpeg"
+
+
 def test_create_and_retrieve_postcard(client: httpx.Client, user: dict[str, object]):
     postcard = create_postcard(client, int(user["id"]), title="Madrid postcard")
 
