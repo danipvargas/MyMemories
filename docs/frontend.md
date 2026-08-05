@@ -35,10 +35,21 @@ lateral navigation rail.
 
 ### Album
 
-The album is not implemented yet.
+The initial album view is implemented.
 
-The planned album will browse postcards, support search and filters, and open a
-postcard detail page showing the original image and metadata.
+It loads the admin user's postcards ordered by most recent acquisition date,
+displays their 3:2 covers, and supports title search plus country, city,
+region, and acquisition date filters. Additional results are loaded with a
+Load more action.
+
+### Postcard detail
+
+The initial detail view is implemented. It opens from an album card and shows
+the original image without a fixed aspect ratio, the postcard metadata, and
+the stored coordinates. Deleting a postcard is available with confirmation.
+
+Metadata, coordinates, and images can be edited from the detail view. The
+detail map remains deferred.
 
 ### Add postcard
 

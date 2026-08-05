@@ -1,4 +1,5 @@
-import { useMapEvents } from "react-leaflet"
+import { useEffect } from "react"
+import { useMap, useMapEvents } from "react-leaflet"
 import { divIcon } from "leaflet"
 import { MapContainer, Marker, TileLayer } from "react-leaflet"
 
@@ -24,6 +25,18 @@ function MapClickHandler({
       onChange([event.latlng.lat, event.latlng.lng])
     },
   })
+
+  return null
+}
+
+function MapViewport({ value }: Pick<LocationPickerProps, "value">) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (value) {
+      map.setView(value, map.getZoom(), { animate: false })
+    }
+  }, [map, value])
 
   return null
 }
@@ -54,6 +67,7 @@ function LocationPicker({ value, onChange }: LocationPickerProps) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapClickHandler onChange={onChange} />
+          <MapViewport value={value} />
           {value && <Marker position={value} icon={markerIcon} />}
         </MapContainer>
       </div>

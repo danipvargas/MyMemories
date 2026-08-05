@@ -1,0 +1,17 @@
+{
+  "name": "MisPostales",
+  "short_name": "MisPostales",
+  "description": "Colección personal de postales y recuerdos de viaje.",
+  "start_url": "/add",
+  "display": "standalone",
+  "background_color": "#FFF3D8",
+  "theme_color": "#FFF3D8",
+  "icons": [
+    {
+      "src": "/logo.svg?v=2",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

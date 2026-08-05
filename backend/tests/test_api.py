@@ -124,6 +124,38 @@ def test_update_and_image_endpoints(client: httpx.Client, user: dict[str, object
     assert cover_response.headers["content-type"] == "image/jpeg"
 
 
+def test_update_can_clear_optional_fields(
+    client: httpx.Client,
+    user: dict[str, object],
+):
+    postcard = create_postcard(
+        client,
+        int(user["id"]),
+        acquisition_date="2024-06-12",
+        date_precision="day",
+    )
+
+    response = client.patch(
+        f"/postcards/{postcard['id']}",
+        data={
+            "title": "Without optional details",
+            "adquisition_date_precision": "unknown",
+            "country": "ES",
+            "city": "",
+            "region": "",
+            "description": "",
+            "latitude": "40",
+            "longitude": "-3",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["adquisition_date"] is None
+    assert response.json()["city"] is None
+    assert response.json()["region"] is None
+    assert response.json()["description"] is None
+
+
 def test_filters_and_pagination(client: httpx.Client, user: dict[str, object]):
     user_id = int(user["id"])
     create_postcard(

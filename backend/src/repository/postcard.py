@@ -180,7 +180,9 @@ def get_postcards(
 
     column = sort_columns[sorting.sort_by]
 
-    stmt = stmt.order_by(column.desc() if sorting.descending else column.asc())
+    stmt = stmt.order_by(
+        column.desc().nulls_last() if sorting.descending else column.asc().nulls_last()
+    )
 
     offset = (pagination.page - 1) * pagination.page_size
     stmt = stmt.offset(offset).limit(pagination.page_size)

@@ -8,7 +8,7 @@ from src.exceptions.postcard import (
     PostcardNotFoundException,
 )
 from src.exceptions.user import UserNotFoundException
-from src.models.postcard import Postcard
+from src.models.postcard import DatePrecision, Postcard
 from src.repository.postcard import create_postcard as repository_create_postcard
 from src.repository.postcard import delete_postcard as repository_delete_postcard
 from src.repository.postcard import get_postcard_by_id as repository_get_postcard_by_id
@@ -256,6 +256,13 @@ def update_postcard(
         exclude_unset=True,
         exclude_none=True,
     )
+
+    if update_data.get("adquisition_date_precision") == DatePrecision.UNKNOWN:
+        update_data["adquisition_date"] = None
+
+    for field in ("city", "region", "description"):
+        if update_data.get(field) == "":
+            update_data[field] = None
 
     latitude = update_data.pop("latitude", None)
     longitude = update_data.pop("longitude", None)
