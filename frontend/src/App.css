@@ -37,6 +37,18 @@ button:disabled {
   margin-bottom: 28px;
 }
 
+.page-header-content {
+  min-width: 0;
+}
+
+.mobile-brand {
+  display: none;
+}
+
+.desktop-page-title {
+  display: block;
+}
+
 .page-header h1,
 .section-heading h2,
 .coming-soon h2 {
@@ -1383,6 +1395,33 @@ button:disabled {
   .date-selects select {
     padding-right: 4px;
     padding-left: 6px;
+  }
+}
+
+@media (max-width: 959px) {
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .mobile-brand img {
+    display: block;
+    width: 56px;
+    height: 72px;
+    object-fit: contain;
+  }
+
+  .mobile-brand-copy {
+    min-width: 0;
+  }
+
+  .mobile-brand-copy h1 {
+    margin-top: 5px;
+  }
+
+  .desktop-page-title {
+    display: none;
   }
 }
 

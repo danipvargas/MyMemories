@@ -29,6 +29,13 @@ function App() {
     : location.pathname.startsWith("/map")
       ? "map"
       : "add"
+  const pageTitle = location.pathname.startsWith("/postcards")
+    ? "Detalle de postal"
+    : activeTab === "add"
+      ? "Añadir postal"
+      : activeTab === "album"
+        ? "Álbum"
+        : "Mapa"
 
   return (
     <div className="app-shell">
@@ -68,15 +75,18 @@ function App() {
 
       <main className="app-main">
         <header className="page-header">
-          <div>
-            <p className="eyebrow">Mis recuerdos</p>
-            <h1>
-              {activeTab === "add"
-                ? "Añadir postal"
-                : activeTab === "album"
-                  ? "Álbum"
-                  : "Mapa"}
-            </h1>
+          <div className="page-header-content">
+            <div className="mobile-brand">
+              <img src="/logo.svg?v=2" alt="" />
+              <div className="mobile-brand-copy">
+                <p className="eyebrow">Mis postales</p>
+                <h1>{pageTitle}</h1>
+              </div>
+            </div>
+            <div className="desktop-page-title">
+              <p className="eyebrow">Mis postales</p>
+              <h1>{pageTitle}</h1>
+            </div>
           </div>
           <div className="profile-badge" title="Perfil de danipvargas">
             <UserRound size={18} />
