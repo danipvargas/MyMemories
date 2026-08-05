@@ -11,6 +11,7 @@ import { ImagePlus, MapPin, Save, Sparkles } from "lucide-react"
 import {
   createPostcard,
   getApiErrorMessage,
+  isDateValidationError,
   type CreatePostcardPayload,
 } from "@/lib/api"
 import { getDatePayload, type DateParts } from "@/lib/date"
@@ -21,7 +22,7 @@ import LocationPicker from "@/components/add-postcard/LocationPicker"
 
 type CropStep = "original" | "cover" | null
 
-const EMPTY_DATE: DateParts = { year: "", month: "", day: "" }
+const EMPTY_DATE: DateParts = { year: "", month: "", day: "", unknown: false }
 
 function AddPostcardPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -41,6 +42,7 @@ function AddPostcardPage() {
   const [cropSource, setCropSource] = useState<string | null>(null)
   const [cropStep, setCropStep] = useState<CropStep>(null)
   const [formError, setFormError] = useState<string | null>(null)
+  const [dateError, setDateError] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -65,6 +67,10 @@ function AddPostcardPage() {
       clearImages()
       setSuccessMessage("La postal se ha guardado en tu colección.")
       setFormError(null)
+      setDateError(false)
+    },
+    onError: (error) => {
+      setDateError(isDateValidationError(error))
     },
   })
 
@@ -132,6 +138,7 @@ function AddPostcardPage() {
     event.preventDefault()
     setSuccessMessage(null)
     setFormError(null)
+    setDateError(false)
 
     if (!originalFile || !coverFile) {
       setFormError("Añade una imagen y prepara su portada antes de guardar.")
@@ -267,7 +274,14 @@ function AddPostcardPage() {
             />
           </label>
 
-          <DatePrecisionFields value={dateParts} onChange={setDateParts} />
+          <DatePrecisionFields
+            value={dateParts}
+            onChange={(value) => {
+              setDateParts(value)
+              setDateError(false)
+            }}
+            invalid={dateError}
+          />
 
           <label className="form-field">
             <span>País <b>*</b></span>

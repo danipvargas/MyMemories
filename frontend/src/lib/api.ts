@@ -85,10 +85,6 @@ export async function createPostcard(
   if (payload.acquisitionDate) {
     formData.append("adquisition_date", payload.acquisitionDate)
   }
-  if (payload.image && payload.cover) {
-    formData.append("postcard_image", payload.image, "postcard.jpg")
-    formData.append("postcard_cover", payload.cover, "cover.jpg")
-  }
   if (payload.city) {
     formData.append("city", payload.city)
   }
@@ -192,6 +188,10 @@ export async function updatePostcard(
   if (payload.acquisitionDate) {
     formData.append("adquisition_date", payload.acquisitionDate)
   }
+  if (payload.image && payload.cover) {
+    formData.append("postcard_image", payload.image, "postcard.jpg")
+    formData.append("postcard_cover", payload.cover, "cover.jpg")
+  }
 
   const response = await fetch(`${API_BASE_URL}/postcards/${postcardId}`, {
     method: "PATCH",
@@ -267,4 +267,29 @@ export function getApiErrorMessage(error: unknown): string {
   }
 
   return "No se pudo guardar la postal. Inténtalo de nuevo."
+}
+
+export function isDateValidationError(error: unknown): boolean {
+  if (!(error instanceof ApiError) || error.status !== 422) {
+    return false
+  }
+
+  if (
+    typeof error.detail !== "object" ||
+    error.detail === null ||
+    !("detail" in error.detail) ||
+    !Array.isArray(error.detail.detail)
+  ) {
+    return false
+  }
+
+  return error.detail.detail.some((item) => {
+    if (typeof item !== "object" || item === null || !("loc" in item)) {
+      return false
+    }
+
+    return Array.isArray(item.loc) && (item.loc as unknown[]).some((part: unknown) => {
+      return typeof part === "string" && part.includes("adquisition_date")
+    })
+  })
 }

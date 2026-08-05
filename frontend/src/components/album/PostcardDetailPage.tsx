@@ -17,11 +17,13 @@ import LocationPicker from "@/components/add-postcard/LocationPicker"
 import PostcardImageReplacement, {
   type ImageReplacement,
 } from "@/components/add-postcard/PostcardImageReplacement"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
 import {
   deletePostcard,
   getApiErrorMessage,
   getPostcard,
   getPostcardImageUrl,
+  isDateValidationError,
   updatePostcard,
   type Postcard,
 } from "@/lib/api"
@@ -47,6 +49,7 @@ function PostcardEditForm({
   const [dateParts, setDateParts] = useState<DateParts>(() => getDateParts(postcard))
   const [coordinates, setCoordinates] = useState<[number, number]>(postcard.coordinates)
   const [imageReplacement, setImageReplacement] = useState<ImageReplacement | null>(null)
+  const [dateError, setDateError] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const mutation = useMutation({
     mutationFn: () => {
@@ -67,6 +70,7 @@ function PostcardEditForm({
       })
     },
     onSuccess: onSaved,
+    onError: (error) => setDateError(isDateValidationError(error)),
   })
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -104,7 +108,14 @@ function PostcardEditForm({
         />
       </label>
 
-      <DatePrecisionFields value={dateParts} onChange={setDateParts} />
+      <DatePrecisionFields
+        value={dateParts}
+        onChange={(value) => {
+          setDateParts(value)
+          setDateError(false)
+        }}
+        invalid={dateError}
+      />
 
       <label className="form-field">
         <span>País <b>*</b></span>
@@ -171,6 +182,7 @@ function PostcardDetailPage() {
   const { postcardId } = useParams()
   const numericId = Number(postcardId)
   const [isEditing, setIsEditing] = useState(false)
+  const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
   const query = useQuery({
     queryKey: ["postcard", numericId],
     queryFn: () => getPostcard(numericId),
@@ -185,16 +197,8 @@ function PostcardDetailPage() {
   })
 
   const handleDelete = () => {
-    if (!query.data || deleteMutation.isPending) {
-      return
-    }
-
-    const confirmed = window.confirm(
-      `¿Quieres eliminar «${query.data.title}»? Esta acción no se puede deshacer.`,
-    )
-
-    if (confirmed) {
-      deleteMutation.mutate()
+    if (query.data && !deleteMutation.isPending) {
+      setDeleteConfirmationOpen(true)
     }
   }
 
@@ -302,6 +306,20 @@ function PostcardDetailPage() {
         <Trash2 size={17} />
         {deleteMutation.isPending ? "Eliminando..." : "Eliminar postal"}
       </button>
+
+      {deleteConfirmationOpen && (
+        <ConfirmDialog
+          title="Eliminar postal"
+          message={`¿Quieres eliminar «${postcard.title}»? Esta acción no se puede deshacer.`}
+          confirmLabel="Eliminar postal"
+          isPending={deleteMutation.isPending}
+          onCancel={() => setDeleteConfirmationOpen(false)}
+          onConfirm={() => {
+            deleteMutation.mutate()
+            setDeleteConfirmationOpen(false)
+          }}
+        />
+      )}
     </section>
   )
 }
