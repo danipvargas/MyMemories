@@ -8,6 +8,7 @@ from src.exceptions.user import (
     UserNotFoundException,
 )
 from src.models.user import User
+from src.repository.postcard import compute_user_stats as repository_compute_stats
 from src.repository.user import (
     create_user as repository_create_user,
 )
@@ -23,7 +24,7 @@ from src.repository.user import (
 )
 from src.repository.user import get_users as repository_get_users
 from src.repository.user import update_user as repository_update_user
-from src.schemas.user import UserCreate, UserResponse, UserUpdate
+from src.schemas.user import UserCreate, UserResponse, UserStats, UserUpdate
 from src.services.authentication import hash_password, validate_user_password
 from src.services.image import delete_image, process_and_save_profile_pic
 
@@ -256,3 +257,21 @@ def update_user(
         delete_image(relative_path=old_profile_image_path)
 
     return _to_user_response_(updated_user)
+
+
+def compute_user_stats(user_id: int, db: Session):
+    user = repository_get_user_by_id(db=db, user_id=user_id)
+
+    if not user:
+        raise UserNotFoundException()
+
+    stats = repository_compute_stats(db=db, user_id=user_id)
+
+    return UserStats(
+        total_postcards=stats["total_postcards"],
+        total_countries=stats["total_countries"],
+        total_cities=stats["total_cities"],
+        oldest_postcard=stats["oldest_postcard"],
+        top_countries_with_postcards=stats["top_countries"],
+        postcards_per_year=stats["postcards_per_year"],
+    )

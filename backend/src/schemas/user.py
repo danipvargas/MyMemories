@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import Form
 from pydantic import BaseModel, EmailStr
 
@@ -45,3 +47,12 @@ class UserUpdate(BaseModel):
             old_password=old_password,
             new_password=new_password,
         )
+
+
+class UserStats(BaseModel):
+    total_postcards: int
+    total_countries: int
+    total_cities: int
+    postcards_per_year: dict[int, int]
+    oldest_postcard: date
+    top_countries_with_postcards: dict[str, int]

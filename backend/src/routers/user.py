@@ -3,9 +3,10 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.database import get_db
-from src.schemas.user import UserCreate, UserResponse, UserUpdate
+from src.schemas.user import UserCreate, UserResponse, UserStats, UserUpdate
 from src.services.image import BASE_STORAGE_FOLDER
 from src.services.user import (
+    compute_user_stats,
     create_user,
     delete_user_by_id,
     get_user_by_id,
@@ -92,6 +93,22 @@ def get_profile_pic(user_id: int, db: Session = Depends(get_db)):
         media_type="image/jpeg",
         headers={"Cache-Control": "no-store"},
     )
+
+
+@router.get(
+    "/{user_id}/stats",
+    response_model=UserStats,
+    status_code=status.HTTP_200_OK,
+    summary="Return user collection stats",
+    description=("Get user most notably collection stats like number of postcards."),
+    responses={
+        200: {"description": "User stats computed successfully."},
+        404: {"description": "User not found"},
+        500: {"description": "Unexpected server error"},
+    },
+)
+def get_user_stats(user_id: int, db: Session = Depends(get_db)):
+    return compute_user_stats(user_id=user_id, db=db)
 
 
 @router.delete(

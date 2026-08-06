@@ -2,7 +2,7 @@ from typing import Any
 
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.functions import ST_DWithin
-from sqlalchemy import select
+from sqlalchemy import distinct, extract, func, select
 from sqlalchemy.orm import Session
 
 from src.models.postcard import Postcard
@@ -211,3 +211,58 @@ def get_postcard_by_id(db: Session, postcard_id: int) -> Postcard:
         The matching postcard if found, otherwise None.
     """
     return db.get(Postcard, postcard_id)
+
+
+def compute_user_stats(db: Session, user_id: int) -> dict:
+    TOP_K = 3
+
+    stmt = select(
+        func.count(Postcard.id).label("total_postcards"),
+        func.count(distinct(Postcard.country)).label("total_countries"),
+        func.count(distinct(Postcard.city)).label("total_cities"),
+        func.min(Postcard.adquisition_date).label("oldest_postcard"),
+    ).where(Postcard.user_id == user_id)
+
+    result = db.execute(stmt).one()
+
+    total_postcards = result.total_postcards
+    total_countries = result.total_countries
+    total_cities = result.total_cities
+    oldest_postcard = result.oldest_postcard
+
+    postcards_per_country = func.count(Postcard.id).label("postcards_per_country")
+
+    stmt = (
+        select(Postcard.country, postcards_per_country)
+        .where(Postcard.user_id == user_id)
+        .group_by(Postcard.country)
+        .order_by(postcards_per_country.desc())
+        .limit(TOP_K)
+    )
+
+    rows = db.execute(stmt).all()
+
+    top_countries = {row.country: row.postcards_per_country for row in rows}
+
+    stmt = (
+        select(
+            extract("year", Postcard.adquisition_date).label("year"),
+            func.count(distinct(Postcard.id)).label("postcards_per_year"),
+        )
+        .where(Postcard.user_id == user_id)
+        .group_by(extract("year", Postcard.adquisition_date))
+        .order_by(extract("year", Postcard.adquisition_date).desc())
+    )
+
+    rows = db.execute(stmt).all()
+
+    postcards_per_year = {int(row.year): row.postcards_per_year for row in rows}
+
+    return {
+        "total_postcards": total_postcards,
+        "total_countries": total_countries,
+        "total_cities": total_cities,
+        "oldest_postcard": oldest_postcard,
+        "top_countries": top_countries,
+        "postcards_per_year": postcards_per_year,
+    }
