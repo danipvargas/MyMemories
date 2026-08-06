@@ -50,7 +50,7 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
   const [formError, setFormError] = useState<string | null>(null)
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
-  const [avatarVersion, setAvatarVersion] = useState<number>()
+  const [avatarVersion, setAvatarVersion] = useState<number>(() => Date.now())
   const [profileCropSource, setProfileCropSource] = useState<string | null>(null)
   const userQuery = useQuery({
     queryKey: ["user", ADMIN_USER_ID],

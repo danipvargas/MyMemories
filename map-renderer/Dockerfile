@@ -2,12 +2,13 @@ FROM mcr.microsoft.com/playwright:v1.55.0-noble
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY map-renderer/package.json map-renderer/package-lock.json ./
 
 RUN npm ci --omit=dev
 
-COPY src ./src
-COPY entrypoint.sh ./entrypoint.sh
+COPY map-renderer/src ./src
+COPY shared/maps/style.json ./src/assets/style.json
+COPY map-renderer/entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x ./entrypoint.sh
 

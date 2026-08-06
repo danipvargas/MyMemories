@@ -1,5 +1,7 @@
-const configuredPickerStyle = import.meta.env.VITE_MAP_STYLE_PICKER?.trim() || undefined
-const configuredPostcardStyle = import.meta.env.VITE_MAP_STYLE_POSTCARD?.trim() || undefined
+import type { StyleSpecification } from "maplibre-gl"
+import localMapStyle from "../../../shared/maps/style.json"
 
-export const MAP_STYLE_PICKER = configuredPickerStyle ?? configuredPostcardStyle ?? ""
-export const MAP_STYLE_POSTCARD = configuredPostcardStyle ?? configuredPickerStyle ?? ""
+const mapStyle = localMapStyle as unknown as StyleSpecification
+
+export const MAP_STYLE_PICKER = mapStyle
+export const MAP_STYLE_POSTCARD = mapStyle

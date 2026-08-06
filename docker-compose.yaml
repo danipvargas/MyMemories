@@ -26,17 +26,14 @@ services:
       retries: 10
 
   map-renderer:
-    build: ./map-renderer
+    build:
+      context: .
+      dockerfile: ./map-renderer/Dockerfile
 
     expose:
       - "8080"
 
-    secrets:
-      - maptiler_apikey
-      - maptiler_style_id
-
     environment:
-      MAP_STYLE_POSTCARD: ${MAP_STYLE_POSTCARD:-}
       MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-10}
       MAP_OUTPUT_QUALITY: ${MAP_OUTPUT_QUALITY:-85}
       MAP_MARKER_PATH: /app/src/assets/map_marker.png
@@ -103,12 +100,6 @@ secrets:
 
   postgres_db:
     file: ./secrets/postgres_database.txt
-
-  maptiler_apikey:
-    file: ./secrets/maptiler_apikey.txt
-
-  maptiler_style_id:
-    file: ./secrets/maptiler_style_id.txt
 
 volumes:
   postgres_data:

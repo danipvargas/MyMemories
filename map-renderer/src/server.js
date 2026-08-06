@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -10,10 +11,13 @@ const maplibreScriptPath = join(
   rendererDirectory,
   "../node_modules/maplibre-gl/dist/maplibre-gl.js",
 );
+const style = JSON.parse(
+  readFileSync(join(rendererDirectory, "assets/style.json"), "utf8"),
+);
 
 const config = {
   port: Number.parseInt(process.env.PORT ?? "8080", 10),
-  styleUrl: process.env.MAP_STYLE_POSTCARD?.trim() ?? "",
+  style,
   defaultZoom: Number.parseFloat(process.env.MAP_DEFAULT_ZOOM ?? "10"),
   outputQuality: Number.parseInt(process.env.MAP_OUTPUT_QUALITY ?? "85", 10),
   markerPath:
@@ -109,11 +113,11 @@ function renderPage(width, height) {
 
 async function waitForMap(page, renderRequest) {
   await page.evaluate(
-    ({ styleUrl, center, zoom }) => {
+    ({ style, center, zoom }) => {
       window.__mapReady = new Promise((resolve, reject) => {
         const map = new maplibregl.Map({
           container: "map",
-          style: styleUrl,
+          style,
           center: [center.longitude, center.latitude],
           zoom,
           pitch: 0,
@@ -133,7 +137,7 @@ async function waitForMap(page, renderRequest) {
       });
     },
     {
-      styleUrl: config.styleUrl,
+      style: config.style,
       center: renderRequest.center,
       zoom: renderRequest.zoom,
     },
@@ -162,10 +166,6 @@ async function overlayMarker(image, width, height) {
 }
 
 async function renderMap(renderRequest) {
-  if (!config.styleUrl) {
-    throw new Error("MAP_STYLE_POSTCARD is not configured.");
-  }
-
   const browser = await getBrowser();
   const page = await browser.newPage({
     viewport: {

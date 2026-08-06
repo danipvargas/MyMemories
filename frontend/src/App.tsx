@@ -15,7 +15,7 @@ function App() {
   const location = useLocation()
   const navigate = useNavigate()
   const [profileOpen, setProfileOpen] = useState(false)
-  const [profileVersion, setProfileVersion] = useState<number>()
+  const [profileVersion, setProfileVersion] = useState<number>(() => Date.now())
   const activeTab: Tab = location.pathname.startsWith("/album") ||
     location.pathname.startsWith("/postcards")
     ? "album"
