@@ -39,10 +39,18 @@ services:
       - postgres_user
       - postgres_password
       - postgres_db
+      - maptiler_apikey
 
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
+      MAPTILER_API_KEY: /run/secrets/maptiler_apikey
+      MAPTILER_STYLE_ID: /run/secrets/maptiler_style_id
+      MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-5}
+      MAP_WIDTH: ${MAP_WIDTH:-600}
+      MAP_HEIGHT: ${MAP_HEIGHT:-400}
+      MAP_FORMAT: ${MAP_FORMAT:-webp}
+      MAP_IMAGE_QUALITY: ${MAP_IMAGE_QUALITY:-85}
 
     depends_on:
       postgres:
@@ -62,13 +70,19 @@ services:
 secrets:
 
   postgres_user:
-    file: ./storage/secrets/postgres_user.txt
+    file: ./secrets/postgres_user.txt
 
   postgres_password:
-    file: ./storage/secrets/postgres_password.txt
+    file: ./secrets/postgres_password.txt
 
   postgres_db:
-    file: ./storage/secrets/postgres_database.txt
+    file: ./secrets/postgres_database.txt
+
+  maptiler_apikey:
+    file: ./secrets/maptiler_apikey.txt
+
+  maptiler_style_id:
+    file: ./secrets/maptiler_style_id.txt
 
 volumes:
   postgres_data:

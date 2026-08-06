@@ -20,6 +20,7 @@ CREATE TABLE postcards (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     image_path VARCHAR(60) NOT NULL,
     cover_path VARCHAR (60) NOT NULL,
+    map_path VARCHAR(60),
     title VARCHAR(60) NOT NULL,
     adquisition_date DATE,
     adquisition_date_precision date_precision NOT NULL,
