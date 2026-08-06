@@ -4,12 +4,13 @@ import {
   getPostcardCoverUrl,
   type Postcard,
 } from "@/lib/api"
-import { getCountryName } from "@/lib/countries"
+import { getCountryCode, getCountryName } from "@/lib/countries"
 import { formatPostcardDate } from "@/lib/date"
 
 function PostcardCard({ postcard }: { postcard: Postcard }) {
   const navigate = useNavigate()
   const countryName = getCountryName(postcard.country)
+  const countryCode = getCountryCode(postcard.country)
   const rotation = 0
 
   return (
@@ -32,7 +33,7 @@ function PostcardCard({ postcard }: { postcard: Postcard }) {
             loading="lazy"
           />
           <span
-            className={`fi fi-${postcard.country.toLowerCase()}`}
+            className={`fi fi-${countryCode.toLowerCase()}`}
             title={countryName}
             aria-label={countryName}
           />

@@ -66,14 +66,6 @@ function AlbumPage() {
 
   return (
     <>
-      <section className="album-intro">
-        <p className="eyebrow">Mi colección</p>
-        <p className="intro-copy">
-          Explora tus postales y vuelve a cada lugar que forma parte de tu
-          historia.
-        </p>
-      </section>
-
       <section className="album-toolbar" aria-label="Buscar y filtrar postales">
         <label className="album-search">
           <Search size={18} aria-hidden="true" />

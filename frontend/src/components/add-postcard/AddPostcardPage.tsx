@@ -173,10 +173,6 @@ function AddPostcardPage() {
   return (
     <>
       <section className="add-intro">
-        <p className="eyebrow">Nueva entrada</p>
-        <p className="intro-copy">
-          Conserva el lugar y la historia detrás de cada postal.
-        </p>
       </section>
 
       <form className="postcard-form" onSubmit={handleSubmit}>
@@ -184,7 +180,6 @@ function AddPostcardPage() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">01 · Imagen</p>
-              <h2 id="image-title">La postal</h2>
             </div>
             <Sparkles size={19} aria-hidden="true" />
           </div>
@@ -258,7 +253,6 @@ function AddPostcardPage() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">02 · Detalles</p>
-              <h2 id="details-title">Cuéntame sobre ella</h2>
             </div>
           </div>
 
@@ -330,8 +324,7 @@ function AddPostcardPage() {
         <section className="form-section location-section" aria-labelledby="location-title">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">03 · Lugar</p>
-              <h2 id="location-title">¿Dónde la encontraste?</h2>
+              <p className="eyebrow">03 · Ubicación</p>
             </div>
             <MapPin size={19} aria-hidden="true" />
           </div>

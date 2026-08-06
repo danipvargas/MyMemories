@@ -49,3 +49,7 @@ body {
 * {
   border-color: var(--aged-paper);
 }
+
+.leaflet-attribution-flag {
+  display: none !important;
+}

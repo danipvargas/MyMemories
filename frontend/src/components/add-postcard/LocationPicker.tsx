@@ -46,7 +46,6 @@ function LocationPicker({ value, onChange }: LocationPickerProps) {
     <div className="location-picker">
       <div className="location-picker-heading">
         <div>
-          <label>Ubicación</label>
           <p>Marca en el mapa el lugar de adquisición.</p>
         </div>
         {value && (
@@ -71,7 +70,6 @@ function LocationPicker({ value, onChange }: LocationPickerProps) {
           {value && <Marker position={value} icon={markerIcon} />}
         </MapContainer>
       </div>
-      {!value && <p className="field-hint">Toca el mapa para seleccionar un punto.</p>}
     </div>
   )
 }

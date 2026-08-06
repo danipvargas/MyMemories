@@ -1,8 +1,8 @@
 import { ArrowLeft, CalendarDays, MapPin, Pencil } from "lucide-react"
 
 import type { Postcard } from "@/lib/api"
-import PostcardLocationMap from "@/components/album/PostcardLocationMap"
-import { getCountryName } from "@/lib/countries"
+import { getPostcardMapUrl } from "@/lib/api"
+import { getCountryCode, getCountryName } from "@/lib/countries"
 import { formatPostcardDate } from "@/lib/date"
 
 type PostcardBackProps = {
@@ -14,6 +14,7 @@ type PostcardBackProps = {
 
 function PostcardBack({ postcard, orientation, onFlip, onEdit }: PostcardBackProps) {
   const countryName = getCountryName(postcard.country)
+  const countryCode = getCountryCode(postcard.country)
   const location = [postcard.city, postcard.region, countryName].filter(Boolean).join(", ")
 
   return (
@@ -22,6 +23,32 @@ function PostcardBack({ postcard, orientation, onFlip, onEdit }: PostcardBackPro
         <p className="postcard-back-kicker">Recuerdo de viaje</p>
         <h2>{postcard.title}</h2>
 
+        {postcard.description ? (
+          <div className="postcard-back-notes">
+            <span>Notas</span>
+            <p>{postcard.description}</p>
+          </div>
+        ) : (
+          <p className="postcard-back-empty-notes">Sin notas para esta postal.</p>
+        )}
+        <img
+          className="postcard-location-image"
+          src={getPostcardMapUrl(postcard.id)}
+          alt={`Mapa de localización de ${postcard.title}`}
+          loading="lazy"
+        />
+      </section>
+
+      <div className="postcard-back-divider" aria-hidden="true" />
+
+      <aside className="postcard-back-postmark">
+        <div className="postcard-back-stamp">
+          <div
+            className={`postcard-back-flag fi fi-${countryCode.toLowerCase()}`}
+            title={countryName}
+            aria-label={countryName}
+          />
+        </div>
         <dl className="postcard-back-meta">
           <div>
             <dt>País</dt>
@@ -42,29 +69,6 @@ function PostcardBack({ postcard, orientation, onFlip, onEdit }: PostcardBackPro
             </dd>
           </div>
         </dl>
-
-        {postcard.description ? (
-          <div className="postcard-back-notes">
-            <span>Notas</span>
-            <p>{postcard.description}</p>
-          </div>
-        ) : (
-          <p className="postcard-back-empty-notes">Sin notas para esta postal.</p>
-        )}
-
-      </section>
-
-      <div className="postcard-back-divider" aria-hidden="true" />
-
-      <aside className="postcard-back-postmark">
-        <div className="postcard-back-stamp">
-          <div
-            className={`postcard-back-flag fi fi-${postcard.country.toLowerCase()}`}
-            title={countryName}
-            aria-label={countryName}
-          />
-        </div>
-        <PostcardLocationMap coordinates={postcard.coordinates} />
       </aside>
 
       <div className="postcard-back-actions">

@@ -239,6 +239,10 @@ export function getPostcardImageUrl(postcardId: number): string {
   return `${API_BASE_URL}/postcards/${postcardId}/image`
 }
 
+export function getPostcardMapUrl(postcardId: number): string {
+  return `${API_BASE_URL}/postcards/${postcardId}/map`
+}
+
 export function getApiErrorMessage(error: unknown): string {
   if (!(error instanceof ApiError)) {
     return "No se pudo conectar con el servidor. Inténtalo de nuevo."
