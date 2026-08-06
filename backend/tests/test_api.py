@@ -46,6 +46,34 @@ def test_admin_seed_is_available(client: httpx.Client):
     assert profile_response.headers["content-type"] == "image/jpeg"
 
 
+def test_user_profile_image_can_be_updated(
+    client: httpx.Client,
+    user: dict[str, object],
+):
+    old_image_response = client.get(f"/users/{user['id']}/profile-pic")
+
+    response = client.patch(
+        f"/users/{user['id']}",
+        data={
+            "username": user["username"],
+            "email": user["email"],
+        },
+        files={
+            "profile_image": (
+                "new-profile.png",
+                image_bytes(color=(138, 60, 60)),
+                "image/png",
+            )
+        },
+    )
+    new_image_response = client.get(f"/users/{user['id']}/profile-pic")
+
+    assert old_image_response.status_code == 200
+    assert response.status_code == 200, response.text
+    assert new_image_response.status_code == 200
+    assert new_image_response.content != old_image_response.content
+
+
 def test_create_and_retrieve_postcard(client: httpx.Client, user: dict[str, object]):
     postcard = create_postcard(client, int(user["id"]), title="Madrid postcard")
 

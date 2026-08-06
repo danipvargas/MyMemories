@@ -90,6 +90,7 @@ def get_profile_pic(user_id: int, db: Session = Depends(get_db)):
     return FileResponse(
         BASE_STORAGE_FOLDER / profile_pic_path,
         media_type="image/jpeg",
+        headers={"Cache-Control": "no-store"},
     )
 
 

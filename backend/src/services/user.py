@@ -203,6 +203,8 @@ def update_user(
     if user is None:
         raise UserNotFoundException()
 
+    old_profile_image_path = user.profile_image_path
+
     if (
         modified_fields.username is not None
         and modified_fields.username != user.username
@@ -251,6 +253,6 @@ def update_user(
     )
 
     if new_profile_image_path is not None:
-        delete_image(relative_path=user.profile_image_path)
+        delete_image(relative_path=old_profile_image_path)
 
     return _to_user_response_(updated_user)

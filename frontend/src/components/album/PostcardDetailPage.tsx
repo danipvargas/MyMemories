@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ArrowLeft, Save, X } from "lucide-react"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import CountryCombobox from "@/components/add-postcard/CountryCombobox"
 import DatePrecisionFields from "@/components/add-postcard/DatePrecisionFields"
@@ -20,6 +20,35 @@ import {
   type Postcard as PostcardData,
 } from "@/lib/api"
 import { getDateParts, getDatePayload, type DateParts } from "@/lib/date"
+
+function getMapReturnQuery(search: string): string | null {
+  const params = new URLSearchParams(search)
+  const longitude = Number(params.get("lng"))
+  const latitude = Number(params.get("lat"))
+  const zoom = Number(params.get("zoom"))
+
+  if (
+    params.get("from") !== "map" ||
+    !Number.isFinite(longitude) ||
+    longitude < -180 ||
+    longitude > 180 ||
+    !Number.isFinite(latitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    !Number.isFinite(zoom) ||
+    zoom < 0 ||
+    zoom > 18
+  ) {
+    return null
+  }
+
+  return new URLSearchParams({
+    from: "map",
+    lng: String(longitude),
+    lat: String(latitude),
+    zoom: String(zoom),
+  }).toString()
+}
 
 type PostcardEditFormProps = {
   postcard: PostcardData
@@ -168,12 +197,16 @@ function PostcardEditForm({
 }
 
 function PostcardDetailPage() {
+  const location = useLocation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { postcardId } = useParams()
   const numericId = Number(postcardId)
   const [isEditing, setIsEditing] = useState(false)
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+  const mapReturnQuery = getMapReturnQuery(location.search)
+  const returnPath = mapReturnQuery ? `/map?${mapReturnQuery}` : "/album"
+  const returnLabel = mapReturnQuery ? "Volver al mapa" : "Volver al álbum"
   const query = useQuery({
     queryKey: ["postcard", numericId],
     queryFn: () => getPostcard(numericId),
@@ -201,8 +234,8 @@ function PostcardDetailPage() {
     return (
       <div className="detail-feedback feedback-error" role="alert">
         {getApiErrorMessage(query.error)}
-        <button type="button" className="secondary-button" onClick={() => navigate("/album")}>
-          Volver al álbum
+        <button type="button" className="secondary-button" onClick={() => navigate(returnPath)}>
+          {returnLabel}
         </button>
       </div>
     )
@@ -212,9 +245,9 @@ function PostcardDetailPage() {
 
   return (
     <section className="postcard-detail">
-      <button type="button" className="back-button" onClick={() => navigate("/album")}>
+      <button type="button" className="back-button" onClick={() => navigate(returnPath)}>
         <ArrowLeft size={18} />
-        Volver al álbum
+        {returnLabel}
       </button>
 
       {isEditing ? (

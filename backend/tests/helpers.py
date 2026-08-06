@@ -3,10 +3,10 @@ from io import BytesIO
 from PIL import Image
 
 
-def image_bytes() -> bytes:
+def image_bytes(color: tuple[int, int, int] = (76, 106, 146)) -> bytes:
     """Return a tiny valid PNG for upload tests."""
     buffer = BytesIO()
-    Image.new("RGB", (2, 2), color=(76, 106, 146)).save(buffer, format="PNG")
+    Image.new("RGB", (2, 2), color=color).save(buffer, format="PNG")
     return buffer.getvalue()
 
 

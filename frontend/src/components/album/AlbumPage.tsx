@@ -103,8 +103,7 @@ function AlbumPage() {
         <section className="album-filters" aria-label="Filtros avanzados">
           <div className="filter-heading">
             <div>
-              <p className="eyebrow">Afinar colección</p>
-              <h2>Filtrar postales</h2>
+              <p className="eyebrow">Filtrar postales</p>
             </div>
             {activeFilterCount > 0 && (
               <button type="button" className="text-button" onClick={clearFilters}>

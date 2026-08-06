@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Filter, LoaderCircle, MapPinned, X } from "lucide-react"
+import { LoaderCircle, MapPinned, X } from "lucide-react"
 import maplibregl, { type Map as MapLibreMap, type Marker } from "maplibre-gl"
 import Supercluster from "supercluster"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 import { getAllPostcards, getApiErrorMessage, getPostcardCoverUrl, type Postcard } from "@/lib/api"
 import { MAP_STYLE_PICKER } from "@/lib/maps"
@@ -11,6 +11,51 @@ import { MAP_STYLE_PICKER } from "@/lib/maps"
 const SPAIN_CENTER: [number, number] = [-3.7038, 40.4168]
 const DEFAULT_ZOOM = 5
 const MAX_ZOOM = 18
+
+type MapViewport = {
+  center: [number, number]
+  zoom: number
+}
+
+function getMapViewport(search: string): MapViewport {
+  const params = new URLSearchParams(search)
+  if (params.get("from") !== "map") {
+    return { center: SPAIN_CENTER, zoom: DEFAULT_ZOOM }
+  }
+
+  const longitude = Number(params.get("lng"))
+  const latitude = Number(params.get("lat"))
+  const zoom = Number(params.get("zoom"))
+
+  if (
+    Number.isFinite(longitude) &&
+    longitude >= -180 &&
+    longitude <= 180 &&
+    Number.isFinite(latitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    Number.isFinite(zoom) &&
+    zoom >= 0 &&
+    zoom <= MAX_ZOOM
+  ) {
+    return { center: [longitude, latitude], zoom }
+  }
+
+  return { center: SPAIN_CENTER, zoom: DEFAULT_ZOOM }
+}
+
+function getPostcardDetailPath(postcardId: number, map: MapLibreMap | null): string {
+  const params = new URLSearchParams({ from: "map" })
+
+  if (map) {
+    const center = map.getCenter()
+    params.set("lng", center.lng.toFixed(6))
+    params.set("lat", center.lat.toFixed(6))
+    params.set("zoom", map.getZoom().toFixed(2))
+  }
+
+  return `/postcards/${postcardId}?${params.toString()}`
+}
 
 type PostcardProperties = {
   postcard: Postcard
@@ -145,11 +190,13 @@ function PostcardStackNavigator({
 }
 
 function WorldMapPage() {
+  const location = useLocation()
   const navigate = useNavigate()
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const markersRef = useRef(new Map<string, Marker>())
   const [stackSelection, setStackSelection] = useState<StackSelection | null>(null)
+  const initialViewport = useMemo(() => getMapViewport(location.search), [location.search])
   const query = useQuery({
     queryKey: ["map-postcards"],
     queryFn: () => getAllPostcards(),
@@ -180,8 +227,8 @@ function WorldMapPage() {
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: MAP_STYLE_PICKER,
-      center: SPAIN_CENTER,
-      zoom: DEFAULT_ZOOM,
+       center: initialViewport.center,
+       zoom: initialViewport.zoom,
       maxZoom: MAX_ZOOM,
       renderWorldCopies: false,
     })
@@ -196,7 +243,7 @@ function WorldMapPage() {
       map.remove()
       mapRef.current = null
     }
-  }, [])
+  }, [initialViewport])
 
   useEffect(() => {
     const map = mapRef.current
@@ -247,7 +294,9 @@ function WorldMapPage() {
                 },
               )
             : createPostcardMarker(feature.properties.postcard, () => {
-                navigate(`/postcards/${feature.properties.postcard.id}`)
+                navigate(
+                  getPostcardDetailPath(feature.properties.postcard.id, map),
+                )
               })
 
           marker = new maplibregl.Marker({
@@ -283,7 +332,9 @@ function WorldMapPage() {
   }, [clusterIndex, navigate])
 
   const openPostcard = (postcard: Postcard) => {
-    const goToPostcard = () => navigate(`/postcards/${postcard.id}`)
+    const goToPostcard = () => {
+      navigate(getPostcardDetailPath(postcard.id, mapRef.current))
+    }
     const transitionDocument = document as Document & {
       startViewTransition?: (callback: () => void) => unknown
     }
