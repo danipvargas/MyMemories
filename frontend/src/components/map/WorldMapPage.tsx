@@ -298,14 +298,6 @@ function WorldMapPage() {
   return (
     <section className="world-map-page">
       <div className="world-map-toolbar">
-        <div>
-          <p className="eyebrow">Atlas de recuerdos</p>
-          <h2>Explora tu colección</h2>
-        </div>
-        <button type="button" className="filter-trigger" onClick={() => navigate("/album")}>
-          <Filter size={18} />
-          Filtros
-        </button>
       </div>
 
       {query.isPending && (

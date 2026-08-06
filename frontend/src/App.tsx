@@ -1,16 +1,21 @@
-import { Images, Map, Plus, UserRound } from "lucide-react"
+import { useState } from "react"
+import { Images, Map, Plus } from "lucide-react"
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
 
 import AddPostcardPage from "@/components/add-postcard/AddPostcardPage"
 import AlbumPage from "@/components/album/AlbumPage"
 import PostcardDetailPage from "@/components/album/PostcardDetailPage"
+import UserProfileDialog from "@/components/shared/UserProfileDialog"
 import WorldMapPage from "@/components/map/WorldMapPage"
+import { ADMIN_USER_ID, getUserProfilePicUrl } from "@/lib/api"
 
 type Tab = "album" | "add" | "map"
 
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [profileVersion, setProfileVersion] = useState<number>()
   const activeTab: Tab = location.pathname.startsWith("/album") ||
     location.pathname.startsWith("/postcards")
     ? "album"
@@ -59,6 +64,18 @@ function App() {
           <Map size={21} />
           <span>Mapa</span>
         </button>
+        <button
+          type="button"
+          className="profile-nav-item"
+          onClick={() => setProfileOpen(true)}
+          aria-label="Abrir perfil"
+        >
+          <img
+            src={getUserProfilePicUrl(ADMIN_USER_ID, profileVersion)}
+            alt=""
+          />
+          <span>Perfil</span>
+        </button>
       </nav>
 
       <main className="app-main">
@@ -76,9 +93,18 @@ function App() {
               <h1>{pageTitle}</h1>
             </div>
           </div>
-          <div className="profile-badge" title="Perfil de danipvargas">
-            <UserRound size={18} />
-          </div>
+          <button
+            type="button"
+            className="profile-badge"
+            onClick={() => setProfileOpen(true)}
+            title="Perfil de danipvargas"
+            aria-label="Abrir perfil"
+          >
+            <img
+              src={getUserProfilePicUrl(ADMIN_USER_ID, profileVersion)}
+              alt=""
+            />
+          </button>
         </header>
 
         <Routes>
@@ -90,6 +116,11 @@ function App() {
           <Route path="*" element={<Navigate to="/add" replace />} />
         </Routes>
       </main>
+      <UserProfileDialog
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        onProfileUpdated={() => setProfileVersion(Date.now())}
+      />
     </div>
   )
 }

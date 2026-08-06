@@ -6,6 +6,20 @@ export const ADMIN_USER_ID = 1
 
 export type DatePrecision = "day" | "month" | "year" | "unknown"
 
+export type User = {
+  id: number
+  username: string
+  email: string
+}
+
+export type UpdateUserPayload = {
+  username: string
+  email: string
+  oldPassword?: string
+  newPassword?: string
+  profileImage?: File
+}
+
 export type Postcard = {
   id: number
   user_id: number
@@ -113,6 +127,58 @@ export async function createPostcard(
   }
 
   return response.json()
+}
+
+export async function getUser(userId: number): Promise<User> {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`)
+
+  if (!response.ok) {
+    let detail: unknown
+
+    try {
+      detail = await response.json()
+    } catch (parseError) {
+      detail = parseError
+    }
+
+    throw new ApiError(response.status, detail)
+  }
+
+  return response.json() as Promise<User>
+}
+
+export async function updateUser(
+  userId: number,
+  payload: UpdateUserPayload,
+): Promise<User> {
+  const formData = new FormData()
+  formData.append("username", payload.username)
+  formData.append("email", payload.email)
+
+  if (payload.oldPassword) formData.append("old_password", payload.oldPassword)
+  if (payload.newPassword) formData.append("new_password", payload.newPassword)
+  if (payload.profileImage) {
+    formData.append("profile_image", payload.profileImage, "profile.jpg")
+  }
+
+  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    method: "PATCH",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    let detail: unknown
+
+    try {
+      detail = await response.json()
+    } catch (parseError) {
+      detail = parseError
+    }
+
+    throw new ApiError(response.status, detail)
+  }
+
+  return response.json() as Promise<User>
 }
 
 export async function getPostcards(
@@ -262,6 +328,11 @@ export function getPostcardMapUrl(postcardId: number): string {
   return `${API_BASE_URL}/postcards/${postcardId}/map`
 }
 
+export function getUserProfilePicUrl(userId: number, version?: number): string {
+  const suffix = version ? `?v=${version}` : ""
+  return `${API_BASE_URL}/users/${userId}/profile-pic${suffix}`
+}
+
 export function getApiErrorMessage(error: unknown): string {
   if (!(error instanceof ApiError)) {
     return "No se pudo conectar con el servidor. Inténtalo de nuevo."
@@ -278,6 +349,12 @@ export function getApiErrorMessage(error: unknown): string {
   }
   if (error.status === 404) {
     return "No se ha encontrado el usuario administrador."
+  }
+  if (error.status === 401) {
+    return "La contraseña actual no es correcta."
+  }
+  if (error.status === 409) {
+    return "El nombre de usuario o correo ya está en uso."
   }
 
   if (
