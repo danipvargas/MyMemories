@@ -4,21 +4,9 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 import AddPostcardPage from "@/components/add-postcard/AddPostcardPage"
 import AlbumPage from "@/components/album/AlbumPage"
 import PostcardDetailPage from "@/components/album/PostcardDetailPage"
+import WorldMapPage from "@/components/map/WorldMapPage"
 
 type Tab = "album" | "add" | "map"
-
-function ComingSoon({ title }: { title: string }) {
-  return (
-    <section className="coming-soon" aria-live="polite">
-      <span className="coming-soon-mark" aria-hidden="true">
-        ✦
-      </span>
-      <p className="eyebrow">En preparación</p>
-      <h2>{title}</h2>
-      <p>Esta ventana llegará más adelante. Tu colección ya está esperando.</p>
-    </section>
-  )
-}
 
 function App() {
   const location = useLocation()
@@ -98,7 +86,7 @@ function App() {
           <Route path="/add" element={<AddPostcardPage />} />
           <Route path="/album" element={<AlbumPage />} />
           <Route path="/postcards/:postcardId" element={<PostcardDetailPage />} />
-          <Route path="/map" element={<ComingSoon title="Tu mapa" />} />
+          <Route path="/map" element={<WorldMapPage />} />
           <Route path="*" element={<Navigate to="/add" replace />} />
         </Routes>
       </main>

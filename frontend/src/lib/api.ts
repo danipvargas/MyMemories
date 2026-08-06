@@ -152,6 +152,25 @@ export async function getPostcards(
   return response.json() as Promise<Postcard[]>
 }
 
+export async function getAllPostcards(
+  filters: PostcardFilters = {},
+): Promise<Postcard[]> {
+  const pageSize = 100
+  const pages: Postcard[][] = []
+  let page = 1
+
+  while (true) {
+    const postcards = await getPostcards(filters, page, pageSize)
+    pages.push(postcards)
+
+    if (postcards.length < pageSize) {
+      return pages.flat()
+    }
+
+    page += 1
+  }
+}
+
 export async function getPostcard(postcardId: number): Promise<Postcard> {
   const response = await fetch(`${API_BASE_URL}/postcards/${postcardId}`)
 
