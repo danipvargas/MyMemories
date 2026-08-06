@@ -8,9 +8,12 @@ import {
   getApiErrorMessage,
   getUser,
   getUserProfilePicUrl,
+  getUserStats,
   updateUser,
   type User,
+  type UserStats,
 } from "@/lib/api"
+import { getCountryCode, getCountryName } from "@/lib/countries"
 
 type UserProfileDialogProps = {
   open: boolean
@@ -44,6 +47,104 @@ function getProfileForm(user: User): ProfileForm {
   }
 }
 
+function formatOldestDate(value: string | null): string {
+  if (!value) {
+    return "Sin fecha registrada"
+  }
+
+  return new Intl.DateTimeFormat("es", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(`${value}T00:00:00`))
+}
+
+function ProfileStatistics({ stats }: { stats: UserStats }) {
+  const topCountries = Object.entries(stats.top_countries_with_postcards).sort(
+    ([, firstCount], [, secondCount]) => secondCount - firstCount,
+  )
+  const postcardsPerYear = Object.entries(stats.postcards_per_year).sort(
+    ([firstYear], [secondYear]) => Number(firstYear) - Number(secondYear),
+  )
+
+  return (
+    <section className="profile-statistics-panel" aria-labelledby="profile-statistics-title">
+      <div className="profile-statistics-heading">
+        <div>
+          <p className="eyebrow">Colección</p>
+          <h3 id="profile-statistics-title">Estadísticas</h3>
+        </div>
+      </div>
+
+      <div className="profile-stat-counters">
+        <div>
+          <strong>{stats.total_postcards}</strong>
+          <span>Postales</span>
+        </div>
+        <div>
+          <strong>{stats.total_cities}</strong>
+          <span>Ciudades</span>
+        </div>
+        <div>
+          <strong>{stats.total_countries}</strong>
+          <span>Países</span>
+        </div>
+      </div>
+
+      <p className="profile-oldest-postcard">
+        <span>Postal más antigua</span>
+        <strong>{formatOldestDate(stats.oldest_postcard)}</strong>
+      </p>
+
+      <div className="profile-stat-tables">
+        <section className="profile-stat-table" aria-labelledby="top-countries-title">
+          <h4 id="top-countries-title">Países con más postales</h4>
+          {topCountries.length > 0 ? (
+            <ul>
+              {topCountries.map(([country, count]) => {
+                const countryCode = getCountryCode(country)
+                return (
+                  <li key={country}>
+                    <span className={`fi fi-${countryCode.toLowerCase()}`} aria-hidden="true" />
+                    <span>{getCountryName(country)}</span>
+                    <strong> {count}</strong>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="profile-stat-empty">Sin datos todavía.</p>
+          )}
+        </section>
+
+        <section className="profile-stat-table" aria-labelledby="years-title">
+          <h4 id="years-title">Postales por año</h4>
+          {postcardsPerYear.length > 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Año</th>
+                  <th scope="col">Postales</th>
+                </tr>
+              </thead>
+              <tbody>
+                {postcardsPerYear.map(([year, count]) => (
+                  <tr key={year}>
+                    <td>{year}</td>
+                    <td>{count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="profile-stat-empty">Sin datos todavía.</p>
+          )}
+        </section>
+      </div>
+    </section>
+  )
+}
+
 function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialogProps) {
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
@@ -55,6 +156,12 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
   const userQuery = useQuery({
     queryKey: ["user", ADMIN_USER_ID],
     queryFn: () => getUser(ADMIN_USER_ID),
+    enabled: open,
+    staleTime: 5 * 60 * 1000,
+  })
+  const statsQuery = useQuery({
+    queryKey: ["user-stats", ADMIN_USER_ID],
+    queryFn: () => getUserStats(ADMIN_USER_ID),
     enabled: open,
     staleTime: 5 * 60 * 1000,
   })
@@ -177,14 +284,15 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
               </div>
             </dl>
 
-            <section className="profile-statistics" aria-labelledby="profile-statistics-title">
-              <div>
-                <p className="eyebrow">Colección</p>
-                <h3 id="profile-statistics-title">Estadísticas</h3>
+            {statsQuery.isPending && (
+              <p className="profile-statistics-feedback">Cargando estadísticas...</p>
+            )}
+            {statsQuery.isError && (
+              <div className="feedback feedback-error" role="alert">
+                {getApiErrorMessage(statsQuery.error)}
               </div>
-              <span>Próximamente</span>
-              <p>Muy pronto podrás descubrir cómo crece tu colección.</p>
-            </section>
+            )}
+            {statsQuery.data && <ProfileStatistics stats={statsQuery.data} />}
 
             {logoutMessage && <p className="profile-dialog-message">{logoutMessage}</p>}
 

@@ -12,6 +12,15 @@ export type User = {
   email: string
 }
 
+export type UserStats = {
+  total_postcards: number
+  total_countries: number
+  total_cities: number
+  oldest_postcard: string | null
+  top_countries_with_postcards: Record<string, number>
+  postcards_per_year: Record<string, number>
+}
+
 export type UpdateUserPayload = {
   username: string
   email: string
@@ -145,6 +154,24 @@ export async function getUser(userId: number): Promise<User> {
   }
 
   return response.json() as Promise<User>
+}
+
+export async function getUserStats(userId: number): Promise<UserStats> {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/stats`)
+
+  if (!response.ok) {
+    let detail: unknown
+
+    try {
+      detail = await response.json()
+    } catch (parseError) {
+      detail = parseError
+    }
+
+    throw new ApiError(response.status, detail)
+  }
+
+  return response.json() as Promise<UserStats>
 }
 
 export async function updateUser(
