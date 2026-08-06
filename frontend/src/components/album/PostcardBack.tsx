@@ -65,7 +65,7 @@ function PostcardBack({ postcard, orientation, onFlip, onEdit }: PostcardBackPro
             <dt>Fecha de visita</dt>
             <dd>
               <CalendarDays size={14} aria-hidden="true" />
-              {formatPostcardDate(postcard)}
+              {formatPostcardDate(postcard, true)}
             </dd>
           </div>
         </dl>

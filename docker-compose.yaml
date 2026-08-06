@@ -36,7 +36,7 @@ services:
       - maptiler_style_id
 
     environment:
-      MAPTILER_STYLE_URL: ${MAPTILER_STYLE_URL:-}
+      MAP_STYLE_POSTCARD: ${MAP_STYLE_POSTCARD:-}
       MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-10}
       MAP_OUTPUT_QUALITY: ${MAP_OUTPUT_QUALITY:-85}
       MAP_MARKER_PATH: /app/src/assets/map_marker.png

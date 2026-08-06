@@ -1,51 +1,115 @@
-import { useEffect } from "react"
-import { useMap, useMapEvents } from "react-leaflet"
-import { divIcon } from "leaflet"
-import { MapContainer, Marker, TileLayer } from "react-leaflet"
+import { useEffect, useRef } from "react"
+import maplibregl, { type Map as MapLibreMap, type Marker } from "maplibre-gl"
+
+import { MAP_STYLE_PICKER } from "@/lib/maps"
 
 const DEFAULT_CENTER: [number, number] = [40.4168, -3.7038]
+const DEFAULT_ZOOM = 5
 
 type LocationPickerProps = {
   value: [number, number] | null
   onChange: (coordinates: [number, number]) => void
 }
 
-const markerIcon = divIcon({
-  className: "postcard-map-marker",
-  html: "<span></span>",
-  iconSize: [28, 38],
-  iconAnchor: [14, 38],
-})
-
-function MapClickHandler({
-  onChange,
-}: Pick<LocationPickerProps, "onChange">) {
-  useMapEvents({
-    click: (event) => {
-      onChange([event.latlng.lat, event.latlng.lng])
-    },
-  })
-
-  return null
-}
-
-function MapViewport({ value }: Pick<LocationPickerProps, "value">) {
-  const map = useMap()
-
-  useEffect(() => {
-    if (value) {
-      map.setView(value, map.getZoom(), { animate: false })
-    }
-  }, [map, value])
-
-  return null
+function createMarkerElement() {
+  const marker = document.createElement("div")
+  marker.className = "postcard-map-marker"
+  marker.innerHTML = "<span></span>"
+  return marker
 }
 
 function LocationPicker({ value, onChange }: LocationPickerProps) {
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<MapLibreMap | null>(null)
+  const markerRef = useRef<Marker | null>(null)
+  const initialValueRef = useRef(value)
+  const onChangeRef = useRef(onChange)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    if (!mapContainerRef.current || !MAP_STYLE_PICKER) {
+      return
+    }
+
+    const initialCoordinates = initialValueRef.current ?? DEFAULT_CENTER
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: MAP_STYLE_PICKER,
+      center: [initialCoordinates[1], initialCoordinates[0]],
+      zoom: DEFAULT_ZOOM,
+      cooperativeGestures: false,
+    })
+    const navigationControl = new maplibregl.NavigationControl({
+      showCompass: false,
+    })
+
+    map.addControl(navigationControl, "top-right")
+    mapRef.current = map
+
+    const updateCoordinates = (longitude: number, latitude: number) => {
+      onChangeRef.current([latitude, longitude])
+    }
+
+    const ensureMarker = (longitude: number, latitude: number) => {
+      if (!markerRef.current) {
+        markerRef.current = new maplibregl.Marker({
+          anchor: "bottom",
+          draggable: true,
+          element: createMarkerElement(),
+        })
+          .setLngLat([longitude, latitude])
+          .addTo(map)
+
+        markerRef.current.on("dragend", () => {
+          const coordinates = markerRef.current?.getLngLat()
+          if (coordinates) {
+            updateCoordinates(coordinates.lng, coordinates.lat)
+          }
+        })
+        return
+      }
+
+      markerRef.current.setLngLat([longitude, latitude])
+    }
+
+    if (initialValueRef.current) {
+      ensureMarker(initialValueRef.current[1], initialValueRef.current[0])
+    }
+
+    const handleMapClick = (event: maplibregl.MapMouseEvent) => {
+      ensureMarker(event.lngLat.lng, event.lngLat.lat)
+      updateCoordinates(event.lngLat.lng, event.lngLat.lat)
+    }
+
+    map.on("click", handleMapClick)
+
+    return () => {
+      markerRef.current?.remove()
+      markerRef.current = null
+      map.remove()
+      mapRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !value) {
+      return
+    }
+
+    const center: [number, number] = [value[1], value[0]]
+    markerRef.current?.setLngLat(center)
+    map.setCenter(center)
+  }, [value])
+
   return (
     <div className="location-picker">
       <div className="location-picker-heading">
         <div>
+          <label>Ubicación</label>
           <p>Marca en el mapa el lugar de adquisición.</p>
         </div>
         {value && (
@@ -55,20 +119,11 @@ function LocationPicker({ value, onChange }: LocationPickerProps) {
         )}
       </div>
       <div className="map-frame">
-        <MapContainer
-          center={DEFAULT_CENTER}
-          zoom={5}
-          scrollWheelZoom
-          attributionControl
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <MapClickHandler onChange={onChange} />
-          <MapViewport value={value} />
-          {value && <Marker position={value} icon={markerIcon} />}
-        </MapContainer>
+        {!MAP_STYLE_PICKER ? (
+          <p className="map-frame-error">Configura VITE_MAP_STYLE_PICKER para mostrar el mapa.</p>
+        ) : (
+          <div ref={mapContainerRef} className="map-canvas" />
+        )}
       </div>
     </div>
   )

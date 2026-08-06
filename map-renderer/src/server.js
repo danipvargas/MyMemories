@@ -13,7 +13,7 @@ const maplibreScriptPath = join(
 
 const config = {
   port: Number.parseInt(process.env.PORT ?? "8080", 10),
-  styleUrl: process.env.MAPTILER_STYLE_URL?.trim() ?? "",
+  styleUrl: process.env.MAP_STYLE_POSTCARD?.trim() ?? "",
   defaultZoom: Number.parseFloat(process.env.MAP_DEFAULT_ZOOM ?? "10"),
   outputQuality: Number.parseInt(process.env.MAP_OUTPUT_QUALITY ?? "85", 10),
   markerPath:
@@ -163,7 +163,7 @@ async function overlayMarker(image, width, height) {
 
 async function renderMap(renderRequest) {
   if (!config.styleUrl) {
-    throw new Error("MAPTILER_STYLE_URL is not configured.");
+    throw new Error("MAP_STYLE_POSTCARD is not configured.");
   }
 
   const browser = await getBrowser();
