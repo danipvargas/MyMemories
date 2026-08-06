@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import UploadFile
 from geoalchemy2.elements import WKTElement
 from geoalchemy2.shape import to_shape
@@ -5,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from src.exceptions.postcard import (
     InvalidPostcardCoordinatesException,
+    PostcardMapNotFoundException,
     PostcardNotFoundException,
 )
 from src.exceptions.user import UserNotFoundException
@@ -13,6 +16,7 @@ from src.repository.postcard import create_postcard as repository_create_postcar
 from src.repository.postcard import delete_postcard as repository_delete_postcard
 from src.repository.postcard import get_postcard_by_id as repository_get_postcard_by_id
 from src.repository.postcard import get_postcards as repository_get_postcards
+from src.repository.postcard import update_map_path as repository_update_map_path
 from src.repository.postcard import update_postcard as repository_update_postcard
 from src.repository.user import exists_user_by_id
 from src.schemas.base import Pagination
@@ -25,9 +29,14 @@ from src.schemas.postcard import (
 )
 from src.services.image import (
     delete_image,
+    delete_map_image,
+    get_map_image,
     process_and_save_cover,
     process_and_save_postcard,
 )
+from src.services.map_preview import generate_map_preview
+
+logger = logging.getLogger(__name__)
 
 
 def _to_postcard_response_(db_postcard: Postcard) -> PostcardResponse:
@@ -89,14 +98,29 @@ def create_postcard(
     image_path = process_and_save_postcard(postcard_image)
     cover_path = process_and_save_cover(postcard_cover)
 
-    return _to_postcard_response_(
-        repository_create_postcard(
-            db=db,
-            new_postcard=new_postcard,
-            postcard_image_path=image_path,
-            cover_path=cover_path,
-        )
+    db_postcard = repository_create_postcard(
+        db=db,
+        new_postcard=new_postcard,
+        postcard_image_path=image_path,
+        cover_path=cover_path,
     )
+
+    try:
+        map_path = generate_map_preview(db_postcard)
+    except Exception:
+        logger.exception(
+            "Unexpected map preview failure for postcard %s", db_postcard.id
+        )
+        map_path = None
+
+    if map_path is not None:
+        db_postcard = repository_update_map_path(
+            db=db,
+            postcard=db_postcard,
+            map_path=map_path,
+        )
+
+    return _to_postcard_response_(db_postcard)
 
 
 def get_postcards(
@@ -194,6 +218,24 @@ def get_postcard_cover_path(db: Session, postcard_id: int) -> str:
     return postcard.cover_path
 
 
+def get_postcard_map_path(db: Session, postcard_id: int) -> str:
+    """Retrieve and validate a postcard's generated map preview path."""
+    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
+
+    if not postcard:
+        raise PostcardNotFoundException()
+
+    if not postcard.map_path:
+        raise PostcardMapNotFoundException()
+
+    try:
+        get_map_image(postcard.map_path)
+    except FileNotFoundError as error:
+        raise PostcardMapNotFoundException() from error
+
+    return postcard.map_path
+
+
 def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
     """
     Delete a postcard by its identifier.
@@ -216,6 +258,8 @@ def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
 
     delete_image(relative_path=deleted_postcard.image_path)
     delete_image(relative_path=deleted_postcard.cover_path)
+    if deleted_postcard.map_path:
+        delete_map_image(relative_path=deleted_postcard.map_path)
 
     return _to_postcard_response_(deleted_postcard)
 
@@ -251,6 +295,8 @@ def update_postcard(
 
     old_image_path = postcard.image_path
     old_cover_path = postcard.cover_path
+    old_map_path = postcard.map_path
+    old_coordinates = to_shape(postcard.coordinates)
 
     update_data = modified_fields.model_dump(
         exclude_unset=True,
@@ -271,10 +317,15 @@ def update_postcard(
         raise InvalidPostcardCoordinatesException()
 
     if latitude is not None and longitude is not None:
+        coordinates_changed = (
+            old_coordinates.y != latitude or old_coordinates.x != longitude
+        )
         update_data["coordinates"] = WKTElement(
             f"POINT({longitude} {latitude})",
             srid=4326,
         )
+    else:
+        coordinates_changed = False
     if new_postcard_image is not None:
         new_image_path = process_and_save_postcard(new_postcard_image)
     else:
@@ -298,5 +349,24 @@ def update_postcard(
 
     if new_cover_path is not None:
         delete_image(old_cover_path)
+
+    if coordinates_changed:
+        try:
+            map_path = generate_map_preview(updated_postcard)
+        except Exception:
+            logger.exception(
+                "Unexpected map preview failure for postcard %s",
+                updated_postcard.id,
+            )
+            map_path = None
+
+        if old_map_path is not None:
+            delete_map_image(old_map_path)
+
+        updated_postcard = repository_update_map_path(
+            db=db,
+            postcard=updated_postcard,
+            map_path=map_path,
+        )
 
     return _to_postcard_response_(updated_postcard)

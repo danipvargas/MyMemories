@@ -108,6 +108,15 @@ def update_postcard(
     return postcard
 
 
+def update_map_path(db: Session, postcard: Postcard, map_path: str | None) -> Postcard:
+    """Store the generated map preview path for a postcard."""
+    postcard.map_path = map_path
+    db.commit()
+    db.refresh(postcard)
+
+    return postcard
+
+
 def get_postcards(
     db: Session,
     filters: PostcardFilters,

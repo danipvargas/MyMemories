@@ -13,13 +13,14 @@ from src.schemas.postcard import (
     PostcardUpdate,
     SortOptions,
 )
-from src.services.image import BASE_STORAGE_FOLDER
+from src.services.image import BASE_STORAGE_FOLDER, get_map_image
 from src.services.postcard import (
     create_postcard,
     delete_postcard,
     get_postcard_by_id,
     get_postcard_cover_path,
     get_postcard_image_path,
+    get_postcard_map_path,
     get_postcards,
     update_postcard,
 )
@@ -133,6 +134,29 @@ def get_postcard_cover(postcard_id: int, db: Session = Depends(get_db)):
     return FileResponse(
         BASE_STORAGE_FOLDER / cover_local_path,
         media_type="image/jpeg",
+    )
+
+
+@router.get(
+    "/{postcard_id}/map",
+    status_code=status.HTTP_200_OK,
+    summary="Download postcard map preview.",
+    description=(
+        "Download the generated map preview using the path stored on the database."
+    ),
+    responses={
+        200: {"description": "Postcard map preview successfully retrieved."},
+        404: {"description": "Postcard or map preview not found"},
+        500: {"description": "Unexpected server error."},
+    },
+)
+def get_postcard_map(postcard_id: int, db: Session = Depends(get_db)):
+    map_local_path = get_postcard_map_path(postcard_id=postcard_id, db=db)
+
+    return FileResponse(
+        get_map_image(map_local_path),
+        media_type="image/webp",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )
 
 

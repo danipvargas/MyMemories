@@ -57,6 +57,11 @@ def test_create_and_retrieve_postcard(client: httpx.Client, user: dict[str, obje
     assert response.json()["coordinates"] == [40.4168, -3.7038]
     assert response.json()["adquisition_date"] is None
 
+    map_response = client.get(f"/postcards/{postcard['id']}/map")
+
+    assert map_response.status_code == 200
+    assert map_response.headers["content-type"] == "image/webp"
+
 
 def test_invalid_coordinates_are_rejected_on_create(
     client: httpx.Client,
@@ -226,11 +231,13 @@ def test_delete_postcard_removes_access_to_images(
     detail_response = client.get(f"/postcards/{postcard_id}")
     image_response = client.get(f"/postcards/{postcard_id}/image")
     cover_response = client.get(f"/postcards/{postcard_id}/cover")
+    map_response = client.get(f"/postcards/{postcard_id}/map")
 
     assert delete_response.status_code == 200
     assert detail_response.status_code == 404
     assert image_response.status_code == 404
     assert cover_response.status_code == 404
+    assert map_response.status_code == 404
 
 
 def test_delete_user_cascades_postcards(client: httpx.Client, user: dict[str, object]):
@@ -264,11 +271,13 @@ def test_missing_resources_return_not_found(client: httpx.Client):
     postcard_response = client.get("/postcards/999999")
     image_response = client.get("/postcards/999999/image")
     cover_response = client.get("/postcards/999999/cover")
+    map_response = client.get("/postcards/999999/map")
 
     assert user_response.status_code == 404
     assert postcard_response.status_code == 404
     assert image_response.status_code == 404
     assert cover_response.status_code == 404
+    assert map_response.status_code == 404
 
 
 def test_invalid_user_is_rejected_on_postcard_creation(client: httpx.Client):

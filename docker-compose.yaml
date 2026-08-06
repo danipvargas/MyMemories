@@ -25,6 +25,35 @@ services:
       timeout: 5s
       retries: 10
 
+  map-renderer:
+    build: ./map-renderer
+
+    expose:
+      - "8080"
+
+    secrets:
+      - maptiler_apikey
+      - maptiler_style_id
+
+    environment:
+      MAPTILER_STYLE_URL: ${MAPTILER_STYLE_URL:-}
+      MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-10}
+      MAP_OUTPUT_QUALITY: ${MAP_OUTPUT_QUALITY:-85}
+      MAP_MARKER_PATH: /app/src/assets/map_marker.png
+      HEADLESS: ${HEADLESS:-true}
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://localhost:8080/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   backend:
     build: ./backend
 
@@ -33,27 +62,24 @@ services:
 
     volumes:
       - ./storage/images:/app/storage/images:Z
-      # - backend_images:/app/storage/images
 
     secrets:
       - postgres_user
       - postgres_password
       - postgres_db
-      - maptiler_apikey
 
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
-      MAPTILER_API_KEY: /run/secrets/maptiler_apikey
-      MAPTILER_STYLE_ID: /run/secrets/maptiler_style_id
-      MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-5}
+      MAP_RENDERER_URL: http://map-renderer:8080
+      MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-10}
       MAP_WIDTH: ${MAP_WIDTH:-600}
       MAP_HEIGHT: ${MAP_HEIGHT:-400}
-      MAP_FORMAT: ${MAP_FORMAT:-webp}
-      MAP_IMAGE_QUALITY: ${MAP_IMAGE_QUALITY:-85}
 
     depends_on:
       postgres:
+        condition: service_healthy
+      map-renderer:
         condition: service_healthy
 
   adminer:
@@ -65,7 +91,7 @@ services:
         condition: service_healthy
 
     ports:
-      - "8080:8080"
+      - "8081:8080"
 
 secrets:
 

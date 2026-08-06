@@ -37,6 +37,8 @@ class Postcard(Base):
 
     cover_path: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
 
+    map_path: Mapped[str | None] = mapped_column(String(60), nullable=True)
+
     title: Mapped[str] = mapped_column(String(60), unique=False, nullable=False)
 
     adquisition_date: Mapped[date | None] = mapped_column(Date, nullable=True)

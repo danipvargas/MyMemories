@@ -13,8 +13,8 @@ COPY entrypoint.sh ./entrypoint.sh
 
 RUN mkdir -p /app/storage/images/profiles \
     && mkdir -p /app/storage/images/postcards \
-    && mkdir -p /app/storage/images/postcards/maps \
     && mkdir -p /app/storage/images/covers \
+    && mkdir -p /app/storage/images/maps \
     && chmod +x ./entrypoint.sh
 
 EXPOSE 8000
