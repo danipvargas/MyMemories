@@ -1,14 +1,6 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {
-  ArrowLeft,
-  CalendarDays,
-  MapPin,
-  Pencil,
-  Save,
-  Trash2,
-  X,
-} from "lucide-react"
+import { ArrowLeft, Save, X } from "lucide-react"
 import { useNavigate, useParams } from "react-router-dom"
 
 import CountryCombobox from "@/components/add-postcard/CountryCombobox"
@@ -18,22 +10,21 @@ import PostcardImageReplacement, {
   type ImageReplacement,
 } from "@/components/add-postcard/PostcardImageReplacement"
 import ConfirmDialog from "@/components/shared/ConfirmDialog"
+import Postcard from "@/components/album/Postcard"
 import {
   deletePostcard,
   getApiErrorMessage,
   getPostcard,
-  getPostcardImageUrl,
   isDateValidationError,
   updatePostcard,
-  type Postcard,
+  type Postcard as PostcardData,
 } from "@/lib/api"
-import { getCountryName } from "@/lib/countries"
-import { getDateParts, getDatePayload, type DateParts, formatPostcardDate } from "@/lib/date"
+import { getDateParts, getDatePayload, type DateParts } from "@/lib/date"
 
 type PostcardEditFormProps = {
-  postcard: Postcard
+  postcard: PostcardData
   onCancel: () => void
-  onSaved: (postcard: Postcard) => void
+  onSaved: (postcard: PostcardData) => void
 }
 
 function PostcardEditForm({
@@ -218,10 +209,6 @@ function PostcardDetailPage() {
   }
 
   const postcard = query.data
-  const countryName = getCountryName(postcard.country)
-  const location = [postcard.city, postcard.region, countryName]
-    .filter(Boolean)
-    .join(", ")
 
   return (
     <section className="postcard-detail">
@@ -229,13 +216,6 @@ function PostcardDetailPage() {
         <ArrowLeft size={18} />
         Volver al álbum
       </button>
-
-      <div className="detail-image-card">
-        <img
-          src={getPostcardImageUrl(postcard.id)}
-          alt={`Imagen completa de ${postcard.title}`}
-        />
-      </div>
 
       {isEditing ? (
         <PostcardEditForm
@@ -249,46 +229,12 @@ function PostcardDetailPage() {
           }}
         />
       ) : (
-        <section className="detail-information">
-          <div className="detail-heading">
-            <p className="eyebrow">Detalle de la postal</p>
-            <div className="detail-title-row">
-              <h2>{postcard.title}</h2>
-              <span
-                className={`detail-country-flag fi fi-${postcard.country.toLowerCase()}`}
-                title={countryName}
-                aria-label={countryName}
-              />
-            </div>
-          </div>
-          <div className="detail-meta">
-            <p>
-              <MapPin size={17} aria-hidden="true" />
-              {location || "Ubicación no indicada"}
-            </p>
-            <p>
-              <CalendarDays size={17} aria-hidden="true" />
-              {formatPostcardDate(postcard)}
-            </p>
-          </div>
-          {postcard.description && (
-            <p className="detail-description">{postcard.description}</p>
-          )}
-          <button type="button" className="primary-button detail-edit-button" onClick={() => setIsEditing(true)}>
-            <Pencil size={17} />
-            Editar postal
-          </button>
-        </section>
-      )}
-
-      {!isEditing && (
-        <section className="detail-map-placeholder">
-          <p className="eyebrow">Localización</p>
-          <h3>Mapa próximamente</h3>
-          <p>
-            Coordenadas: {postcard.coordinates[0].toFixed(4)}, {postcard.coordinates[1].toFixed(4)}
-          </p>
-        </section>
+        <Postcard
+          postcard={postcard}
+          onDelete={handleDelete}
+          isDeleting={deleteMutation.isPending}
+          onEdit={() => setIsEditing(true)}
+        />
       )}
 
       {deleteMutation.isError && (
@@ -296,16 +242,6 @@ function PostcardDetailPage() {
           {getApiErrorMessage(deleteMutation.error)}
         </div>
       )}
-
-      <button
-        type="button"
-        className="delete-button"
-        onClick={handleDelete}
-        disabled={deleteMutation.isPending}
-      >
-        <Trash2 size={17} />
-        {deleteMutation.isPending ? "Eliminando..." : "Eliminar postal"}
-      </button>
 
       {deleteConfirmationOpen && (
         <ConfirmDialog
