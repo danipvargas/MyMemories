@@ -2,8 +2,6 @@ export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"
 ).replace(/\/$/, "")
 
-export const ADMIN_USER_ID = 1
-
 export type DatePrecision = "day" | "month" | "year" | "unknown"
 
 export type User = {
@@ -91,12 +89,72 @@ export class ApiError extends Error {
   }
 }
 
+function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  return fetch(input, { ...init, credentials: "include" })
+}
+
+export async function getCurrentUser(): Promise<User> {
+  const response = await apiFetch(`${API_BASE_URL}/auth/me`)
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.json().catch((error) => error))
+  }
+
+  return response.json() as Promise<User>
+}
+
+export async function login(identifier: string, password: string): Promise<User> {
+  const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier, password }),
+  })
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.json().catch((error) => error))
+  }
+
+  return response.json() as Promise<User>
+}
+
+export async function logout(): Promise<void> {
+  const response = await apiFetch(`${API_BASE_URL}/auth/logout`, { method: "POST" })
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.json().catch((error) => error))
+  }
+}
+
+export async function registerUser(payload: {
+  username: string
+  email: string
+  password: string
+  profileImage?: File
+}): Promise<User> {
+  const formData = new FormData()
+  formData.append("username", payload.username)
+  formData.append("email", payload.email)
+  formData.append("password", payload.password)
+  if (payload.profileImage) {
+    formData.append("profile_image", payload.profileImage, "profile.jpg")
+  }
+
+  const response = await apiFetch(`${API_BASE_URL}/users/`, {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.json().catch((error) => error))
+  }
+
+  return response.json() as Promise<User>
+}
+
 export async function createPostcard(
   payload: CreatePostcardPayload,
 ): Promise<unknown> {
   const formData = new FormData()
 
-  formData.append("user_id", String(ADMIN_USER_ID))
   formData.append("title", payload.title)
   formData.append("adquisition_date_precision", payload.datePrecision)
   formData.append("country", payload.country)
@@ -118,7 +176,7 @@ export async function createPostcard(
     formData.append("description", payload.description)
   }
 
-  const response = await fetch(`${API_BASE_URL}/postcards/`, {
+  const response = await apiFetch(`${API_BASE_URL}/postcards/`, {
     method: "POST",
     body: formData,
   })
@@ -139,7 +197,7 @@ export async function createPostcard(
 }
 
 export async function getUser(userId: number): Promise<User> {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}`)
+  const response = await apiFetch(`${API_BASE_URL}/users/${userId}`)
 
   if (!response.ok) {
     let detail: unknown
@@ -157,7 +215,7 @@ export async function getUser(userId: number): Promise<User> {
 }
 
 export async function getUserStats(userId: number): Promise<UserStats> {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/stats`)
+  const response = await apiFetch(`${API_BASE_URL}/users/${userId}/stats`)
 
   if (!response.ok) {
     let detail: unknown
@@ -188,7 +246,7 @@ export async function updateUser(
     formData.append("profile_image", payload.profileImage, "profile.jpg")
   }
 
-  const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/users/${userId}`, {
     method: "PATCH",
     body: formData,
   })
@@ -214,7 +272,6 @@ export async function getPostcards(
   pageSize = 20,
 ): Promise<Postcard[]> {
   const searchParams = new URLSearchParams({
-    user_id: String(ADMIN_USER_ID),
     page: String(page),
     page_size: String(pageSize),
     sort_by: "adquisition_date",
@@ -228,7 +285,7 @@ export async function getPostcards(
   if (filters.startDate) searchParams.set("start_date", filters.startDate)
   if (filters.endDate) searchParams.set("end_date", filters.endDate)
 
-  const response = await fetch(`${API_BASE_URL}/postcards/?${searchParams}`)
+  const response = await apiFetch(`${API_BASE_URL}/postcards/?${searchParams}`)
 
   if (!response.ok) {
     let detail: unknown
@@ -265,7 +322,7 @@ export async function getAllPostcards(
 }
 
 export async function getPostcard(postcardId: number): Promise<Postcard> {
-  const response = await fetch(`${API_BASE_URL}/postcards/${postcardId}`)
+  const response = await apiFetch(`${API_BASE_URL}/postcards/${postcardId}`)
 
   if (!response.ok) {
     let detail: unknown
@@ -305,7 +362,7 @@ export async function updatePostcard(
     formData.append("postcard_cover", payload.cover, "cover.jpg")
   }
 
-  const response = await fetch(`${API_BASE_URL}/postcards/${postcardId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/postcards/${postcardId}`, {
     method: "PATCH",
     body: formData,
   })
@@ -326,7 +383,7 @@ export async function updatePostcard(
 }
 
 export async function deletePostcard(postcardId: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/postcards/${postcardId}`, {
+  const response = await apiFetch(`${API_BASE_URL}/postcards/${postcardId}`, {
     method: "DELETE",
   })
 
@@ -378,6 +435,15 @@ export function getApiErrorMessage(error: unknown): string {
     return "No se ha encontrado el usuario administrador."
   }
   if (error.status === 401) {
+    if (
+      typeof error.detail === "object" &&
+      error.detail !== null &&
+      "detail" in error.detail &&
+      typeof error.detail.detail === "string" &&
+      error.detail.detail.includes("Invalid username")
+    ) {
+      return "El usuario, correo o contraseña no son correctos."
+    }
     return "La contraseña actual no es correcta."
   }
   if (error.status === 409) {

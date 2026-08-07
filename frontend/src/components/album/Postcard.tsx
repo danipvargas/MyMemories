@@ -23,6 +23,7 @@ function Postcard({ postcard, onDelete, isDeleting, onEdit }: PostcardProps) {
       front={
         <PostcardFront
           postcard={postcard}
+          orientation={orientation}
           onFlip={() => setIsFlipped(true)}
           onDelete={onDelete}
           isDeleting={isDeleting}

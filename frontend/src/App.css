@@ -490,6 +490,20 @@ button:disabled {
   background: var(--paper);
 }
 
+.postcard-front--vertical .postcard-front-footer {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.postcard-front--vertical .postcard-front-actions {
+  width: 100%;
+}
+
+.postcard-front--vertical .postcard-action-button {
+  min-width: 0;
+  flex: 1 1 0;
+  justify-content: center;
+}
+
 .postcard-front-footer {
   width: 100%;
   display: grid;
@@ -519,7 +533,7 @@ button:disabled {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 15px;
 }
 
 .postcard-action-button {
@@ -705,7 +719,7 @@ button:disabled {
 
 .postcard-back-actions {
   display: flex;
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
   grid-area: actions;
   flex-wrap: wrap;
@@ -717,12 +731,13 @@ button:disabled {
 
 .postcard-back-actions .primary-button,
 .postcard-back-actions .secondary-button {
+  margin-top: 20px;
   width: 154px;
   min-width: 0;
   flex: 0 1 154px;
   height: 38px;
   min-height: 38px;
-  padding: 7px 10px;
+  padding: 7px 20px;
   font-size: 0.78rem;
   white-space: nowrap;
 }
@@ -753,14 +768,22 @@ button:disabled {
 }
 
 .postcard-back--vertical .postcard-back-stamp {
+  grid-area: stamp;
+  align-self: start;
   justify-self: end;
 }
 
 .postcard-back--vertical .postcard-back-postmark {
+  display: grid;
+  grid-template-areas: "meta stamp";
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 18px;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+}
+
+.postcard-back--vertical .postcard-back-meta {
+  grid-area: meta;
 }
 
 .postcard-back--vertical .postcard-back-copy h2 {
@@ -768,7 +791,17 @@ button:disabled {
 }
 
 .postcard-back--vertical .postcard-back-actions {
+  flex-wrap: nowrap;
   justify-content: flex-end;
+}
+
+.postcard-back--vertical .postcard-back-actions .primary-button,
+.postcard-back--vertical .postcard-back-actions .secondary-button {
+  width: auto;
+  flex: 1 1 0;
+  padding-right: 6px;
+  padding-left: 6px;
+  font-size: 0.7rem;
 }
 
 .back-button {
@@ -2303,6 +2336,110 @@ button:disabled {
   color: var(--secondary-ink);
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.auth-page {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 12% 15%, rgb(200 155 60 / 12%), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgb(76 106 146 / 10%), transparent 30%),
+    var(--paper);
+}
+
+.auth-card {
+  display: grid;
+  width: min(100%, 430px);
+  gap: 14px;
+  padding: clamp(24px, 6vw, 42px);
+  border: 1px solid rgb(115 84 47 / 28%);
+  border-radius: 20px;
+  background: rgb(255 246 227 / 94%);
+  box-shadow: 0 18px 45px rgb(60 49 40 / 14%);
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+}
+
+.auth-brand img {
+  display: block;
+  width: 48px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.auth-card h1 {
+  margin: 0;
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 7vw, 2.35rem);
+  line-height: 1;
+}
+
+.auth-intro {
+  max-width: 330px;
+  margin: -3px 0 5px;
+  color: var(--secondary-ink);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-switch {
+  margin: 2px 0 0;
+  color: var(--muted-ink);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: var(--vintage-blue);
+  font-weight: 800;
+}
+
+.auth-file-field {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  border: 1px dashed var(--aged-paper);
+  border-radius: 10px;
+  color: var(--secondary-ink);
+  background: rgb(255 253 248 / 60%);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.auth-file-field input {
+  width: 100%;
+  color: var(--muted-ink);
+  font-size: 0.76rem;
+}
+
+.auth-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  color: var(--muted-ink);
+  background: var(--paper);
 }
 
 .crop-dialog-backdrop {

@@ -3,10 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Camera, KeyRound, LogOut, Pencil, UserRound, X } from "lucide-react"
 
 import CropDialog from "@/components/add-postcard/CropDialog"
+import { useAuth } from "@/auth/useAuth"
 import {
-  ADMIN_USER_ID,
   getApiErrorMessage,
-  getUser,
   getUserProfilePicUrl,
   getUserStats,
   updateUser,
@@ -146,6 +145,7 @@ function ProfileStatistics({ stats }: { stats: UserStats }) {
 }
 
 function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialogProps) {
+  const { user, logout } = useAuth()
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
@@ -153,16 +153,10 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
   const [avatarVersion, setAvatarVersion] = useState<number>(() => Date.now())
   const [profileCropSource, setProfileCropSource] = useState<string | null>(null)
-  const userQuery = useQuery({
-    queryKey: ["user", ADMIN_USER_ID],
-    queryFn: () => getUser(ADMIN_USER_ID),
-    enabled: open,
-    staleTime: 5 * 60 * 1000,
-  })
   const statsQuery = useQuery({
-    queryKey: ["user-stats", ADMIN_USER_ID],
-    queryFn: () => getUserStats(ADMIN_USER_ID),
-    enabled: open,
+    queryKey: ["user-stats", user?.id],
+    queryFn: () => getUserStats(user!.id),
+    enabled: open && user !== null,
     staleTime: 5 * 60 * 1000,
   })
 
@@ -172,7 +166,7 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
         throw new Error("Las contraseñas nuevas no coinciden.")
       }
 
-      return updateUser(ADMIN_USER_ID, {
+      return updateUser(user!.id, {
         username: form.username.trim(),
         email: form.email.trim(),
         oldPassword: form.oldPassword || undefined,
@@ -181,7 +175,7 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
       })
     },
     onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["user", ADMIN_USER_ID], updatedUser)
+      queryClient.setQueryData(["auth-user"], updatedUser)
       setIsEditing(false)
       setFormError(null)
       setAvatarVersion(Date.now())
@@ -196,12 +190,11 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
     },
   })
 
-  if (!open) {
+  if (!open || !user) {
     return null
   }
 
-  const user = userQuery.data
-  const profileImageUrl = getUserProfilePicUrl(ADMIN_USER_ID, avatarVersion)
+  const profileImageUrl = getUserProfilePicUrl(user.id, avatarVersion)
 
   const updateField = (field: keyof ProfileForm, value: string | File | undefined) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -221,9 +214,7 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
   }
 
   const startEditing = () => {
-    if (user) {
-      setForm(getProfileForm(user))
-    }
+    setForm(getProfileForm(user))
     setLogoutMessage(null)
     setFormError(null)
     setIsEditing(true)
@@ -255,15 +246,7 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
           </button>
         </header>
 
-        {userQuery.isPending && <p className="profile-dialog-feedback">Cargando perfil...</p>}
-
-        {userQuery.isError && (
-          <div className="feedback feedback-error" role="alert">
-            {getApiErrorMessage(userQuery.error)}
-          </div>
-        )}
-
-        {user && !isEditing && (
+        {!isEditing && (
           <div className="profile-dialog-content">
             <div className="profile-identity">
               <img src={profileImageUrl} alt={`Foto de ${user.username}`} />
@@ -304,7 +287,11 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
               <button
                 type="button"
                 className="secondary-button profile-logout-button"
-                onClick={() => setLogoutMessage("El cierre de sesión estará disponible próximamente.")}
+                onClick={() => {
+                  void logout()
+                    .then(onClose)
+                    .catch((error) => setLogoutMessage(getApiErrorMessage(error)))
+                }}
               >
                 <LogOut size={16} />
                 Cerrar sesión
@@ -313,7 +300,7 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
           </div>
         )}
 
-        {user && isEditing && (
+        {isEditing && (
           <form
             className="profile-dialog-content profile-edit-form"
             onSubmit={(event) => {

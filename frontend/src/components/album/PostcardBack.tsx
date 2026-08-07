@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, MapPin, Pencil } from "lucide-react"
+import { CalendarDays, MapPin, Pencil, RefreshCw } from "lucide-react"
 
 import type { Postcard } from "@/lib/api"
 import { getPostcardMapUrl } from "@/lib/api"
@@ -73,7 +73,7 @@ function PostcardBack({ postcard, orientation, onFlip, onEdit }: PostcardBackPro
 
       <div className="postcard-back-actions">
         <button type="button" className="secondary-button" onClick={onFlip}>
-          <ArrowLeft size={16} />
+          <RefreshCw size={16} />
           Dar la vuelta
         </button>
         <button type="button" className="primary-button" onClick={onEdit}>

@@ -2,20 +2,41 @@ import { useState } from "react"
 import { Images, Map, Plus } from "lucide-react"
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
 
+import { useAuth } from "@/auth/useAuth"
+import LoginPage from "@/components/auth/LoginPage"
+import RegisterPage from "@/components/auth/RegisterPage"
 import AddPostcardPage from "@/components/add-postcard/AddPostcardPage"
 import AlbumPage from "@/components/album/AlbumPage"
 import PostcardDetailPage from "@/components/album/PostcardDetailPage"
 import UserProfileDialog from "@/components/shared/UserProfileDialog"
 import WorldMapPage from "@/components/map/WorldMapPage"
-import { ADMIN_USER_ID, getUserProfilePicUrl } from "@/lib/api"
+import { getUserProfilePicUrl } from "@/lib/api"
 
 type Tab = "album" | "add" | "map"
 
 function App() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, isLoading } = useAuth()
   const [profileOpen, setProfileOpen] = useState(false)
   const [profileVersion, setProfileVersion] = useState<number>(() => Date.now())
+
+  if (isLoading) {
+    return <div className="auth-loading">Comprobando sesión...</div>
+  }
+
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    )
+  }
+
+  if (location.pathname === "/login" || location.pathname === "/register") {
+    return <Navigate to="/album" replace />
+  }
   const activeTab: Tab = location.pathname.startsWith("/album") ||
     location.pathname.startsWith("/postcards")
     ? "album"
@@ -71,7 +92,7 @@ function App() {
           aria-label="Abrir perfil"
         >
           <img
-            src={getUserProfilePicUrl(ADMIN_USER_ID, profileVersion)}
+            src={getUserProfilePicUrl(user.id, profileVersion)}
             alt=""
           />
           <span>Perfil</span>
@@ -101,7 +122,7 @@ function App() {
             aria-label="Abrir perfil"
           >
             <img
-              src={getUserProfilePicUrl(ADMIN_USER_ID, profileVersion)}
+              src={getUserProfilePicUrl(user.id, profileVersion)}
               alt=""
             />
           </button>

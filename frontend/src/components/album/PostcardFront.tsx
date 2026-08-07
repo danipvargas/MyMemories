@@ -4,6 +4,7 @@ import { getPostcardImageUrl, type Postcard } from "@/lib/api"
 
 type PostcardFrontProps = {
   postcard: Postcard
+  orientation: "horizontal" | "vertical"
   onFlip: () => void
   onDelete: () => void
   isDeleting: boolean
@@ -12,13 +13,14 @@ type PostcardFrontProps = {
 
 function PostcardFront({
   postcard,
+  orientation,
   onFlip,
   onDelete,
   isDeleting,
   onImageLoad,
 }: PostcardFrontProps) {
   return (
-    <article className="postcard-front">
+    <article className={`postcard-front postcard-front--${orientation}`}>
       <img
         className="postcard-front-image"
         src={getPostcardImageUrl(postcard.id)}
