@@ -30,26 +30,3 @@ CREATE TABLE postcards (
     coordinates geography(Point, 4326) NOT NULL,
     description TEXT
 );
-
-INSERT INTO users (
-    id,
-    username,
-    email,
-    password_hash,
-    profile_image_path
-)
-OVERRIDING SYSTEM VALUE
-VALUES (
-    1,
-    'danipvargas',
-    'danipvargas@gmail.com',
-    '$argon2id$v=19$m=65536,t=3,p=4$J9Av0qb5xRVSlr2t3BeJdw$97yNsQB9XEgQtiRp2H/plALt+Ov5wRRVuzNV4c193xc',
-    'profiles/default_profile.jpg'
-)
-ON CONFLICT DO NOTHING;
-
-SELECT setval(
-    pg_get_serial_sequence('users', 'id'),
-    GREATEST(COALESCE((SELECT MAX(id) FROM users), 0) + 1, 1),
-    false
-);

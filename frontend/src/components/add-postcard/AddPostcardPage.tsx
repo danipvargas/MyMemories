@@ -6,7 +6,7 @@ import {
   type FormEvent,
 } from "react"
 import { useMutation } from "@tanstack/react-query"
-import { ImagePlus, MapPin, Save, Sparkles } from "lucide-react"
+import { ImagePlus, MapPin, Save, Sparkles, NotebookPen } from "lucide-react"
 
 import {
   createPostcard,
@@ -254,6 +254,7 @@ function AddPostcardPage() {
             <div>
               <p className="eyebrow">02 · Detalles</p>
             </div>
+            <NotebookPen size={19} aria-hidden="true"/>
           </div>
 
           <label className="form-field">
