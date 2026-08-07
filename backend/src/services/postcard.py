@@ -68,6 +68,13 @@ def _to_postcard_response_(db_postcard: Postcard) -> PostcardResponse:
     )
 
 
+def _get_owned_postcard(db: Session, postcard_id: int, user_id: int) -> Postcard:
+    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
+    if postcard is None or postcard.user_id != user_id:
+        raise PostcardNotFoundException()
+    return postcard
+
+
 def create_postcard(
     db: Session,
     new_postcard: PostcardCreate,
@@ -149,7 +156,11 @@ def get_postcards(
     ]
 
 
-def get_postcard_by_id(db: Session, postcard_id: int) -> PostcardResponse:
+def get_postcard_by_id(
+    db: Session,
+    postcard_id: int,
+    current_user_id: int,
+) -> PostcardResponse:
     """
     Retrieve a postcard by its identifier.
 
@@ -164,15 +175,12 @@ def get_postcard_by_id(db: Session, postcard_id: int) -> PostcardResponse:
         PostcardNotFoundException: If no postcard with the given identifier exists.
         sqlalchemy.exc.SQLAlchemyError: If the database query fails.
     """
-    db_postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
-
-    if not db_postcard:
-        raise PostcardNotFoundException()
+    db_postcard = _get_owned_postcard(db, postcard_id, current_user_id)
 
     return _to_postcard_response_(db_postcard)
 
 
-def get_postcard_image_path(db: Session, postcard_id: int) -> str:
+def get_postcard_image_path(db: Session, postcard_id: int, current_user_id: int) -> str:
     """
     Retrieve a postcard image path by its identifier.
 
@@ -187,15 +195,12 @@ def get_postcard_image_path(db: Session, postcard_id: int) -> str:
         PostcardNotFoundException: If no postcard with the given identifier exists.
         sqlalchemy.exc.SQLAlchemyError: If the database query fails.
     """
-    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
-
-    if not postcard:
-        raise PostcardNotFoundException()
+    postcard = _get_owned_postcard(db, postcard_id, current_user_id)
 
     return postcard.image_path
 
 
-def get_postcard_cover_path(db: Session, postcard_id: int) -> str:
+def get_postcard_cover_path(db: Session, postcard_id: int, current_user_id: int) -> str:
     """
     Retrieve a postcard cover path by its identifier.
 
@@ -210,20 +215,14 @@ def get_postcard_cover_path(db: Session, postcard_id: int) -> str:
         PostcardNotFoundException: If no postcard with the given identifier exists.
         sqlalchemy.exc.SQLAlchemyError: If the database query fails.
     """
-    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
-
-    if not postcard:
-        raise PostcardNotFoundException()
+    postcard = _get_owned_postcard(db, postcard_id, current_user_id)
 
     return postcard.cover_path
 
 
-def get_postcard_map_path(db: Session, postcard_id: int) -> str:
+def get_postcard_map_path(db: Session, postcard_id: int, current_user_id: int) -> str:
     """Retrieve and validate a postcard's generated map preview path."""
-    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
-
-    if not postcard:
-        raise PostcardNotFoundException()
+    postcard = _get_owned_postcard(db, postcard_id, current_user_id)
 
     if not postcard.map_path:
         raise PostcardMapNotFoundException()
@@ -236,7 +235,11 @@ def get_postcard_map_path(db: Session, postcard_id: int) -> str:
     return postcard.map_path
 
 
-def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
+def delete_postcard(
+    db: Session,
+    postcard_id: int,
+    current_user_id: int,
+) -> PostcardResponse:
     """
     Delete a postcard by its identifier.
 
@@ -251,7 +254,8 @@ def delete_postcard(db: Session, postcard_id: int) -> PostcardResponse:
         PostcardNotFoundException: If no postcard with the given identifier exists.
         sqlalchemy.exc.SQLAlchemyError: If the database operation fails.
     """
-    deleted_postcard = repository_delete_postcard(db=db, postcard_id=postcard_id)
+    postcard = _get_owned_postcard(db, postcard_id, current_user_id)
+    deleted_postcard = repository_delete_postcard(db=db, postcard_id=postcard.id)
 
     if not deleted_postcard:
         raise PostcardNotFoundException()
@@ -268,6 +272,7 @@ def update_postcard(
     db: Session,
     postcard_id: int,
     modified_fields: PostcardUpdate,
+    current_user_id: int,
     new_postcard_image: UploadFile | None = None,
     new_postcard_cover: UploadFile | None = None,
 ) -> PostcardResponse:
@@ -288,10 +293,7 @@ def update_postcard(
         PostcardNotFoundException: If no postcard with the given identifier exists.
         sqlalchemy.exc.SQLAlchemyError: If the database operation fails.
     """
-    postcard = repository_get_postcard_by_id(db=db, postcard_id=postcard_id)
-
-    if postcard is None:
-        raise PostcardNotFoundException()
+    postcard = _get_owned_postcard(db, postcard_id, current_user_id)
 
     old_image_path = postcard.image_path
     old_cover_path = postcard.cover_path

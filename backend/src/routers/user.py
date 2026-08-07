@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, File, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.database import get_db
+from src.models.user import User
 from src.schemas.user import UserCreate, UserResponse, UserStats, UserUpdate
+from src.services.authentication import get_current_user
 from src.services.image import BASE_STORAGE_FOLDER
 from src.services.user import (
     compute_user_stats,
@@ -37,7 +39,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 )
 def add_user(
     user: UserCreate = Depends(UserCreate.as_form),
-    profile_image: UploadFile = File(...),
+    profile_image: UploadFile | None = File(None),
     db: Session = Depends(get_db),
 ):
     return create_user(db=db, new_user=user, profile_image=profile_image)
@@ -54,7 +56,10 @@ def add_user(
         500: {"description": "Unexpected server error."},
     },
 )
-def read_users(db: Session = Depends(get_db)):
+def read_users(
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
     return get_users(db)
 
 
@@ -70,7 +75,13 @@ def read_users(db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db)):
+def retrieve_user_by_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden.")
     return get_user_by_id(user_id=user_id, db=db)
 
 
@@ -85,7 +96,13 @@ def retrieve_user_by_id(user_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def get_profile_pic(user_id: int, db: Session = Depends(get_db)):
+def get_profile_pic(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden.")
     profile_pic_path = get_user_profile_pic_path(db=db, user_id=user_id)
 
     return FileResponse(
@@ -107,7 +124,13 @@ def get_profile_pic(user_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error"},
     },
 )
-def get_user_stats(user_id: int, db: Session = Depends(get_db)):
+def get_user_stats(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden.")
     return compute_user_stats(user_id=user_id, db=db)
 
 
@@ -123,7 +146,13 @@ def get_user_stats(user_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden.")
     return delete_user_by_id(db, user_id=user_id)
 
 
@@ -149,7 +178,10 @@ def patch_user(
     modified_fields: UserUpdate = Depends(UserUpdate.as_form),
     profile_image: UploadFile | None = File(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden.")
     return update_user(
         db=db,
         user_id=user_id,

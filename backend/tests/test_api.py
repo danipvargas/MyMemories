@@ -35,13 +35,16 @@ def create_postcard(
     return response.json()
 
 
-def test_admin_seed_is_available(client: httpx.Client):
-    user_response = client.get("/users/1")
-    profile_response = client.get("/users/1/profile-pic")
+def test_authenticated_user_profile_is_available(
+    client: httpx.Client,
+    user: dict[str, object],
+):
+    user_response = client.get(f"/users/{user['id']}")
+    profile_response = client.get(f"/users/{user['id']}/profile-pic")
 
     assert user_response.status_code == 200
-    assert user_response.json()["username"] == "danipvargas"
-    assert user_response.json()["email"] == "danipvargas@gmail.com"
+    assert user_response.json()["username"] == user["username"]
+    assert user_response.json()["email"] == user["email"]
     assert profile_response.status_code == 200
     assert profile_response.headers["content-type"] == "image/jpeg"
 
@@ -72,6 +75,20 @@ def test_user_profile_image_can_be_updated(
     assert response.status_code == 200, response.text
     assert new_image_response.status_code == 200
     assert new_image_response.content != old_image_response.content
+
+
+def test_user_stats_ignore_postcards_without_dates(
+    client: httpx.Client,
+    user: dict[str, object],
+):
+    create_postcard(client, int(user["id"]))
+
+    response = client.get(f"/users/{user['id']}/stats")
+
+    assert response.status_code == 200, response.text
+    assert response.json()["total_postcards"] == 1
+    assert response.json()["oldest_postcard"] is None
+    assert response.json()["postcards_per_year"] == {}
 
 
 def test_create_and_retrieve_postcard(client: httpx.Client, user: dict[str, object]):
@@ -242,7 +259,7 @@ def test_filters_and_pagination(client: httpx.Client, user: dict[str, object]):
     ) < date.fromisoformat(second_page_response.json()[0]["adquisition_date"])
 
 
-def test_pagination_validation(client: httpx.Client):
+def test_pagination_validation(client: httpx.Client, user: dict[str, object]):
     response = client.get("/postcards/", params={"page": 0, "page_size": 101})
 
     assert response.status_code == 422
@@ -275,7 +292,7 @@ def test_delete_user_cascades_postcards(client: httpx.Client, user: dict[str, ob
     postcard_response = client.get(f"/postcards/{postcard['id']}")
 
     assert delete_response.status_code == 200
-    assert postcard_response.status_code == 404
+    assert postcard_response.status_code == 401
 
 
 def test_duplicate_user_is_rejected(client: httpx.Client, user: dict[str, object]):
@@ -294,21 +311,24 @@ def test_duplicate_user_is_rejected(client: httpx.Client, user: dict[str, object
     assert response.status_code == 409
 
 
-def test_missing_resources_return_not_found(client: httpx.Client):
+def test_missing_resources_return_not_found(
+    client: httpx.Client,
+    user: dict[str, object],
+):
     user_response = client.get("/users/999999")
     postcard_response = client.get("/postcards/999999")
     image_response = client.get("/postcards/999999/image")
     cover_response = client.get("/postcards/999999/cover")
     map_response = client.get("/postcards/999999/map")
 
-    assert user_response.status_code == 404
+    assert user_response.status_code == 403
     assert postcard_response.status_code == 404
     assert image_response.status_code == 404
     assert cover_response.status_code == 404
     assert map_response.status_code == 404
 
 
-def test_invalid_user_is_rejected_on_postcard_creation(client: httpx.Client):
+def test_postcard_creation_requires_authentication(client: httpx.Client):
     response = client.post(
         "/postcards/",
         data={
@@ -322,7 +342,7 @@ def test_invalid_user_is_rejected_on_postcard_creation(client: httpx.Client):
         files=postcard_files(),
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 401
 
 
 def test_unsupported_postcard_image_format_is_rejected(

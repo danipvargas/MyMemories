@@ -19,6 +19,11 @@ class UserCreate(BaseModel):
         return cls(username=username, email=email, password=password)
 
 
+class LoginRequest(BaseModel):
+    identifier: str
+    password: str
+
+
 class UserResponse(BaseModel):
     id: int
     username: str
@@ -54,5 +59,5 @@ class UserStats(BaseModel):
     total_countries: int
     total_cities: int
     postcards_per_year: dict[int, int]
-    oldest_postcard: date
+    oldest_postcard: date | None
     top_countries_with_postcards: dict[str, int]

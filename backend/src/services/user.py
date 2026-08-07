@@ -36,7 +36,7 @@ def _to_user_response_(user: User) -> UserResponse:
 def create_user(
     db: Session,
     new_user: UserCreate,
-    profile_image: UploadFile,
+    profile_image: UploadFile | None,
 ) -> UserResponse:
     """
     Create a new user.
@@ -60,7 +60,11 @@ def create_user(
     if exists_email(db, new_user.email):
         raise EmailAlreadyRegistered()
 
-    image_path = process_and_save_profile_pic(profile_image)
+    image_path = (
+        process_and_save_profile_pic(profile_image)
+        if profile_image is not None
+        else "profiles/default_profile.jpg"
+    )
     new_user.password = hash_password(new_user.password)
 
     return _to_user_response_(

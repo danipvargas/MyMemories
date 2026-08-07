@@ -112,6 +112,15 @@ def get_user_by_id(db: Session, user_id: int) -> User:
     return db.get(User, user_id)
 
 
+def get_user_by_identifier(db: Session, identifier: str) -> User | None:
+    """Retrieve a user by username or email for authentication."""
+    return (
+        db.query(User)
+        .filter((User.username == identifier) | (User.email == identifier))
+        .first()
+    )
+
+
 def exists_user_by_id(db: Session, user_id: int) -> bool:
     """
     Check whether a user with the given identifier exists.

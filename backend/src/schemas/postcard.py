@@ -21,7 +21,7 @@ class PostcardResponse(BaseModel):
 
 
 class PostcardCreate(BaseModel):
-    user_id: int
+    user_id: int | None = None
     title: str
     adquisition_date: date | None = None
     adquisition_date_precision: DatePrecision
@@ -35,7 +35,7 @@ class PostcardCreate(BaseModel):
     @classmethod
     def as_form(
         cls,
-        user_id: int = Form(...),
+        user_id: int | None = Form(None),
         title: str = Form(...),
         adquisition_date: date | None = Form(None),
         adquisition_date_precision: DatePrecision = Form(...),

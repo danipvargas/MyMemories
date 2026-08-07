@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from src.config import ALLOWED_ORIGINS
 from src.database import Base, engine
 from src.exceptions.base import MyMemoriesError
+from src.routers.auth import router as auth_router
 from src.routers.postcard import router as postcards_router
 from src.routers.user import router as users_router
 
@@ -31,10 +32,12 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 app.include_router(users_router)
 app.include_router(postcards_router)
+app.include_router(auth_router)
 
 
 @app.exception_handler(MyMemoriesError)

@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from src.database import get_db
+from src.models.user import User
 from src.schemas.base import Pagination
 from src.schemas.postcard import (
     PostcardCreate,
@@ -13,6 +14,7 @@ from src.schemas.postcard import (
     PostcardUpdate,
     SortOptions,
 )
+from src.services.authentication import get_current_user
 from src.services.image import BASE_STORAGE_FOLDER, get_map_image
 from src.services.postcard import (
     create_postcard,
@@ -50,7 +52,9 @@ def add_postcard(
     postcard_image: UploadFile = File(...),
     postcard_cover: UploadFile = File(...),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    new_postcard.user_id = current_user.id
     return create_postcard(
         db=db,
         new_postcard=new_postcard,
@@ -77,7 +81,9 @@ def read_postcards(
     sorting: Annotated[SortOptions, Depends()],
     pagination: Annotated[Pagination, Depends()],
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    filters.user_id = current_user.id
     return get_postcards(db, filters=filters, sorting=sorting, pagination=pagination)
 
 
@@ -93,8 +99,16 @@ def read_postcards(
         500: {"description": "Unexpected server error."},
     },
 )
-def retrieve_postcard_by_id(postcard_id: int, db: Session = Depends(get_db)):
-    return get_postcard_by_id(postcard_id=postcard_id, db=db)
+def retrieve_postcard_by_id(
+    postcard_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_postcard_by_id(
+        postcard_id=postcard_id,
+        db=db,
+        current_user_id=current_user.id,
+    )
 
 
 @router.get(
@@ -108,8 +122,16 @@ def retrieve_postcard_by_id(postcard_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def get_postcard_image(postcard_id: int, db: Session = Depends(get_db)):
-    postcard_local_path = get_postcard_image_path(postcard_id=postcard_id, db=db)
+def get_postcard_image(
+    postcard_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    postcard_local_path = get_postcard_image_path(
+        postcard_id=postcard_id,
+        db=db,
+        current_user_id=current_user.id,
+    )
 
     return FileResponse(
         BASE_STORAGE_FOLDER / postcard_local_path,
@@ -128,8 +150,16 @@ def get_postcard_image(postcard_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def get_postcard_cover(postcard_id: int, db: Session = Depends(get_db)):
-    cover_local_path = get_postcard_cover_path(postcard_id=postcard_id, db=db)
+def get_postcard_cover(
+    postcard_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    cover_local_path = get_postcard_cover_path(
+        postcard_id=postcard_id,
+        db=db,
+        current_user_id=current_user.id,
+    )
 
     return FileResponse(
         BASE_STORAGE_FOLDER / cover_local_path,
@@ -150,8 +180,16 @@ def get_postcard_cover(postcard_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def get_postcard_map(postcard_id: int, db: Session = Depends(get_db)):
-    map_local_path = get_postcard_map_path(postcard_id=postcard_id, db=db)
+def get_postcard_map(
+    postcard_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    map_local_path = get_postcard_map_path(
+        postcard_id=postcard_id,
+        db=db,
+        current_user_id=current_user.id,
+    )
 
     return FileResponse(
         get_map_image(map_local_path),
@@ -172,8 +210,12 @@ def get_postcard_map(postcard_id: int, db: Session = Depends(get_db)):
         500: {"description": "Unexpected server error."},
     },
 )
-def delete_postcard_by_id(postcard_id: int, db: Session = Depends(get_db)):
-    return delete_postcard(db, postcard_id=postcard_id)
+def delete_postcard_by_id(
+    postcard_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return delete_postcard(db, postcard_id=postcard_id, current_user_id=current_user.id)
 
 
 @router.patch(
@@ -198,6 +240,7 @@ def patch_postcard(
     postcard_image: UploadFile | None = File(None),
     postcard_cover: UploadFile | None = File(None),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     return update_postcard(
         db=db,
@@ -205,4 +248,5 @@ def patch_postcard(
         modified_fields=modified_fields,
         new_postcard_image=postcard_image,
         new_postcard_cover=postcard_cover,
+        current_user_id=current_user.id,
     )

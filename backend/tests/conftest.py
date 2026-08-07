@@ -52,6 +52,15 @@ def user(client: httpx.Client) -> Generator[dict[str, object]]:
     assert response.status_code == 201, response.text
     created_user = response.json()
 
+    login_response = client.post(
+        "/auth/login",
+        json={
+            "identifier": created_user["username"],
+            "password": "test-password",
+        },
+    )
+    assert login_response.status_code == 200, login_response.text
+
     yield created_user
 
     client.delete(f"/users/{created_user['id']}")

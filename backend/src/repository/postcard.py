@@ -249,7 +249,10 @@ def compute_user_stats(db: Session, user_id: int) -> dict:
             extract("year", Postcard.adquisition_date).label("year"),
             func.count(distinct(Postcard.id)).label("postcards_per_year"),
         )
-        .where(Postcard.user_id == user_id)
+        .where(
+            Postcard.user_id == user_id,
+            Postcard.adquisition_date.is_not(None),
+        )
         .group_by(extract("year", Postcard.adquisition_date))
         .order_by(extract("year", Postcard.adquisition_date).desc())
     )
