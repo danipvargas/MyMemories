@@ -5,6 +5,7 @@ type DatePrecisionFieldsProps = {
   value: DateParts
   onChange: (value: DateParts) => void
   invalid?: boolean
+  showTodayShortcut?: boolean
 }
 
 const MONTHS = [
@@ -46,7 +47,19 @@ function DatePrecisionFields({
   value,
   onChange,
   invalid = false,
+  showTodayShortcut = false,
 }: DatePrecisionFieldsProps) {
+  const today = new Date()
+  const todayParts = {
+    year: String(today.getFullYear()),
+    month: String(today.getMonth() + 1),
+    day: String(today.getDate()),
+  }
+  const isToday = !value.unknown &&
+    value.year === todayParts.year &&
+    value.month === todayParts.month &&
+    value.day === todayParts.day
+
   const daysInMonth = value.year && value.month
     ? new Date(Number(value.year), Number(value.month), 0).getDate()
     : 31
@@ -74,6 +87,22 @@ function DatePrecisionFields({
         />
         <span>Fecha desconocida</span>
       </label>
+      {showTodayShortcut && (
+        <label className="date-shortcut-checkbox">
+          <input
+            type="checkbox"
+            checked={isToday}
+            onChange={(event) =>
+              onChange(
+                event.target.checked
+                  ? { ...todayParts, unknown: false }
+                  : { year: "", month: "", day: "", unknown: false },
+              )
+            }
+          />
+          <span>Usar la fecha de hoy</span>
+        </label>
+      )}
       <div className="date-selects">
         <select
           id="acquisition-year"

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Camera, KeyRound, LogOut, Pencil, UserRound, X } from "lucide-react"
 
@@ -153,6 +153,8 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
   const [avatarVersion, setAvatarVersion] = useState<number>(() => Date.now())
   const [profileCropSource, setProfileCropSource] = useState<string | null>(null)
+  const profileCameraInputRef = useRef<HTMLInputElement>(null)
+  const profileGalleryInputRef = useRef<HTMLInputElement>(null)
   const statsQuery = useQuery({
     queryKey: ["user-stats", user?.id],
     queryFn: () => getUserStats(user!.id),
@@ -211,6 +213,12 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
   const completeProfileCrop = (file: File) => {
     updateField("profileImage", file)
     cancelProfileCrop()
+  }
+
+  const handleProfileImageSelection = (file: File | undefined) => {
+    if (file) {
+      setProfileCropSource(URL.createObjectURL(file))
+    }
   }
 
   const startEditing = () => {
@@ -314,21 +322,42 @@ function UserProfileDialog({ open, onClose, onProfileUpdated }: UserProfileDialo
           >
             <div className="profile-edit-photo">
               <img src={profileImageUrl} alt="Foto de perfil actual" />
-              <label className="secondary-button">
-                <Camera size={16} />
-                Cambiar foto
+              <div className="profile-photo-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => profileCameraInputRef.current?.click()}
+                >
+                  <Camera size={16} />
+                  Hacer foto
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => profileGalleryInputRef.current?.click()}
+                >
+                  Galería
+                </button>
                 <input
+                  ref={profileCameraInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  capture="environment"
+                  onChange={(event) => {
+                    handleProfileImageSelection(event.target.files?.[0])
+                    event.target.value = ""
+                  }}
+                />
+                <input
+                  ref={profileGalleryInputRef}
                   type="file"
                   accept="image/jpeg,image/png"
                   onChange={(event) => {
-                    const file = event.target.files?.[0]
+                    handleProfileImageSelection(event.target.files?.[0])
                     event.target.value = ""
-                    if (file) {
-                      setProfileCropSource(URL.createObjectURL(file))
-                    }
                   }}
                 />
-              </label>
+              </div>
               {form.profileImage && <small>{form.profileImage.name}</small>}
             </div>
 

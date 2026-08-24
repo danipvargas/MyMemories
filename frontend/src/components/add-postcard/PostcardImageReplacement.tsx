@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react"
-import { ImagePlus } from "lucide-react"
+import { Camera, ImagePlus, Images } from "lucide-react"
 
 import CropDialog from "@/components/add-postcard/CropDialog"
 
@@ -18,6 +18,7 @@ function PostcardImageReplacement({
   onChange,
 }: PostcardImageReplacementProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const objectUrls = useRef<string[]>([])
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
@@ -104,28 +105,61 @@ function PostcardImageReplacement({
           <img src={coverPreview} alt="Nueva portada" />
         </div>
       ) : (
-        <button
-          type="button"
-          className="replacement-trigger"
-          onClick={() => fileInputRef.current?.click()}
-        >
+        <div className="replacement-trigger">
           <ImagePlus size={20} />
-          Elegir una nueva imagen
-        </button>
+          <span>Elegir una nueva imagen</span>
+          <div className="upload-choice-row">
+            <button
+              type="button"
+              className="upload-choice"
+              onClick={() => cameraInputRef.current?.click()}
+            >
+              <Camera size={16} />
+              Cámara
+            </button>
+            <button
+              type="button"
+              className="upload-choice"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Images size={16} />
+              Galería
+            </button>
+          </div>
+        </div>
       )}
 
       {imagePreview && coverPreview && (
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Cambiar selección
-        </button>
+        <div className="image-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => cameraInputRef.current?.click()}
+          >
+            <Camera size={16} />
+            Hacer foto
+          </button>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Images size={16} />
+            Galería
+          </button>
+        </div>
       )}
 
       {error && <p className="field-error">{error}</p>}
 
+      <input
+        ref={cameraInputRef}
+        className="visually-hidden"
+        type="file"
+        accept="image/jpeg,image/png"
+        capture="environment"
+        onChange={handleFileChange}
+      />
       <input
         ref={fileInputRef}
         className="visually-hidden"

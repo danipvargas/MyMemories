@@ -6,7 +6,7 @@ import {
   type FormEvent,
 } from "react"
 import { useMutation } from "@tanstack/react-query"
-import { ImagePlus, MapPin, Save, Sparkles, NotebookPen } from "lucide-react"
+import { Camera, ImagePlus, Images, MapPin, Save, Sparkles, NotebookPen } from "lucide-react"
 
 import {
   createPostcard,
@@ -26,6 +26,7 @@ const EMPTY_DATE: DateParts = { year: "", month: "", day: "", unknown: false }
 
 function AddPostcardPage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const objectUrls = useRef<string[]>([])
   const [title, setTitle] = useState("")
   const [country, setCountry] = useState("")
@@ -196,18 +197,32 @@ function AddPostcardPage() {
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              className="upload-trigger"
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <div className="upload-trigger">
               <span className="upload-icon">
                 <ImagePlus size={28} strokeWidth={1.7} />
               </span>
               <strong>Añade una imagen</strong>
-              <span>Desde tu galería o cámara</span>
+              <span>Elige una imagen desde tu galería o cámara</span>
+              <div className="upload-choice-row">
+                <button
+                  type="button"
+                  className="upload-choice"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera size={17} />
+                  Usar cámara
+                </button>
+                <button
+                  type="button"
+                  className="upload-choice"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Images size={17} />
+                  Galería
+                </button>
+              </div>
               <small>JPG, JPEG o PNG</small>
-            </button>
+            </div>
           )}
 
           {originalPreview && !coverPreview && (
@@ -230,13 +245,30 @@ function AddPostcardPage() {
               <button
                 type="button"
                 className="secondary-button"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <Camera size={16} />
+                Hacer foto
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Cambiar imagen
+                <Images size={16} />
+                Elegir imagen
               </button>
             </div>
           )}
 
+          <input
+            ref={cameraInputRef}
+            className="visually-hidden"
+            type="file"
+            accept="image/jpeg,image/png"
+            capture="environment"
+            onChange={handleFileChange}
+          />
           <input
             ref={fileInputRef}
             className="visually-hidden"
@@ -275,6 +307,7 @@ function AddPostcardPage() {
               setDateParts(value)
               setDateError(false)
             }}
+            showTodayShortcut
             invalid={dateError}
           />
 

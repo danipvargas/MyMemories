@@ -909,7 +909,8 @@ button:disabled {
 }
 
 .replacement-trigger {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   width: fit-content;
   align-items: center;
   gap: 8px;
@@ -925,6 +926,42 @@ button:disabled {
 
 .replacement-trigger:hover {
   background: var(--surface-hover);
+}
+
+.upload-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.upload-trigger .upload-choice-row {
+  width: 100%;
+}
+
+.replacement-trigger .upload-choice-row {
+  grid-column: 1 / -1;
+}
+
+.upload-choice {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid rgb(76 106 146 / 30%);
+  border-radius: 8px;
+  color: var(--vintage-blue);
+  background: rgb(76 106 146 / 8%);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.upload-choice:hover,
+.upload-choice:focus-visible {
+  background: rgb(76 106 146 / 15%);
 }
 
 .replacement-previews {
@@ -1282,7 +1319,18 @@ button:disabled {
   font-size: 0.82rem;
 }
 
-.unknown-date-checkbox input {
+.date-shortcut-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--vintage-blue);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.unknown-date-checkbox input,
+.date-shortcut-checkbox input {
   width: 16px;
   height: 16px;
   accent-color: var(--vintage-blue);
@@ -2298,6 +2346,12 @@ button:disabled {
 
 .profile-edit-photo label {
   width: fit-content;
+}
+
+.profile-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .profile-edit-photo input[type="file"] {
