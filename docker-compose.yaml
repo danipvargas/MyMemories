@@ -84,6 +84,18 @@ services:
       map-renderer:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+
+    ports:
+      - "5173:80"
+
+    depends_on:
+      backend:
+        condition: service_started
+
   adminer:
     image: adminer:latest
     restart: unless-stopped
