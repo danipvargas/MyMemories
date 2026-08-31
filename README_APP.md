@@ -1,13 +1,22 @@
-# MyMemories
+# MyMemories: A visual home to store, revisit and administrate all your postcards and souvenirs.
 
-### A visual home for the places and moments you bring back with you.
+<center>
+<img src="frontend/public/logo.svg" alt="Description" width="100">
+</center>
+
 
 <!-- Add a hero screenshot at docs/screenshots/album-overview.png. -->
 ![MyMemories album overview](docs/screenshots/album-overview.png)
 
-MyMemories turns a collection of postcards into a living travel archive. Save the image, the story, the place, and the date behind each postcard, then revisit the collection as an album or across an interactive map.
+## Why MyMemories?
 
-The experience is currently centered on postcards, with room to grow into other kinds of souvenirs and keepsakes.
+As a postcard collector, I have faced the same problem since I started collecting: all my postcards are, if I'm lucky, kept together in a single box, where they remain until I want to look through or organize them.
+
+This makes simple tasks surprisingly difficult, such as finding a specific postcard, knowing how many postcards I own, or checking whether I already have one from a particular place.
+
+MyMemories is a personal project created to solve these problems. Whenever a new postcard arrives, the application lets you add it to your collection along with useful information such as its location, coordinates, date, and an optional description.
+
+Once your collection is digitalized, browsing and filtering your postcards becomes as easy as flipping through a photo album — or even easier!
 
 ## Keep every detail of the memory
 
@@ -40,10 +49,6 @@ Replace the paths below with the screenshots that best show the app in use.
 
 <!-- Add screenshot: docs/screenshots/world-map.png -->
 ![Postcards on the world map](docs/screenshots/world-map.png)
-
-## The idea
-
-Travel memories are often stored in boxes, drawers, and camera rolls. MyMemories gives them a place that is easier to revisit: part album, part map, and part personal journal.
 
 ## Project status
 
