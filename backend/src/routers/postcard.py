@@ -194,7 +194,7 @@ def get_postcard_map(
     return FileResponse(
         get_map_image(map_local_path),
         media_type="image/webp",
-        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+        headers={"Cache-Control": "private, no-store"},
     )
 
 

@@ -13,7 +13,6 @@ from src.services.user import (
     delete_user_by_id,
     get_user_by_id,
     get_user_profile_pic_path,
-    get_users,
     update_user,
 )
 
@@ -43,24 +42,6 @@ def add_user(
     db: Session = Depends(get_db),
 ):
     return create_user(db=db, new_user=user, profile_image=profile_image)
-
-
-@router.get(
-    "/",
-    response_model=list[UserResponse],
-    status_code=status.HTTP_200_OK,
-    summary="List all users",
-    description=("Lists all existing users in the database."),
-    responses={
-        200: {"description": "Users successfully listed."},
-        500: {"description": "Unexpected server error."},
-    },
-)
-def read_users(
-    db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
-):
-    return get_users(db)
 
 
 @router.get(

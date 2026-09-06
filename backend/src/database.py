@@ -28,7 +28,16 @@ DATABASE_URL = URL.create(
     database=POSTGRES_DB,
 )
 
-engine = create_engine(DATABASE_URL, echo=True)
+
+def _sql_echo_enabled() -> bool:
+    """Allow SQL echo for development, but never enable it in production."""
+    if os.getenv("APP_ENV", "development").strip().lower() == "production":
+        return False
+    else:
+        return True
+
+
+engine = create_engine(DATABASE_URL, echo=_sql_echo_enabled())
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 

@@ -85,19 +85,6 @@ def update_user(
     return user
 
 
-def get_users(db: Session) -> list[User]:
-    """
-    Retrieve all users from the database.
-
-    Args:
-        db: Active database session.
-
-    Returns:
-        A list containing all stored users.
-    """
-    return db.query(User).all()
-
-
 def get_user_by_id(db: Session, user_id: int) -> User:
     """
     Retrieve a user by its identifier.

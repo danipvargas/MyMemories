@@ -22,7 +22,6 @@ from src.repository.user import (
 from src.repository.user import (
     get_user_by_id as repository_get_user_by_id,
 )
-from src.repository.user import get_users as repository_get_users
 from src.repository.user import update_user as repository_update_user
 from src.schemas.user import UserCreate, UserResponse, UserStats, UserUpdate
 from src.services.authentication import hash_password, validate_user_password
@@ -74,24 +73,6 @@ def create_user(
             profile_image_path=image_path,
         )
     )
-
-
-def get_users(
-    db: Session,
-) -> list[UserResponse]:
-    """
-    Retrieve all users.
-
-    Args:
-        db: Active database session.
-
-    Returns:
-        A list containing all users.
-
-    Raises:
-        sqlalchemy.exc.SQLAlchemyError: If the database query fails.
-    """
-    return [_to_user_response_(dbu) for dbu in repository_get_users(db=db)]
 
 
 def get_user_by_id(db: Session, user_id: int) -> UserResponse:

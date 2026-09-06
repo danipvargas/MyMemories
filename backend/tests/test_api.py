@@ -49,6 +49,15 @@ def test_authenticated_user_profile_is_available(
     assert profile_response.headers["content-type"] == "image/jpeg"
 
 
+def test_user_directory_endpoint_is_not_available(
+    client: httpx.Client,
+    user: dict[str, object],
+):
+    response = client.get("/users/")
+
+    assert response.status_code == 405
+
+
 def test_user_profile_image_can_be_updated(
     client: httpx.Client,
     user: dict[str, object],
