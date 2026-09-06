@@ -36,7 +36,7 @@ Once your collection is digitalized, browsing and filtering your postcards becom
 ### Postcard details
 <p align="center">
   <img src="resources/postcard_front_details.png" alt="MyMemories postcard front details page" width="400">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &nbsp;
   <img src="resources/postcard_back_details.png" alt="MyMemories postcard back details page" width="400">
 </p>
 
@@ -89,3 +89,7 @@ MyMemories is a personal project designed with a private, non-public deployment 
 Security was considered throughout development, and reasonable measures were taken for the project's intended personal use. Nevertheless, vulnerabilities or security breaches may still exist. Anyone adapting MyMemories for an internet-facing deployment should perform an appropriate security review and add any hardening required for that environment.
 
 If you discover a security issue, please report it privately rather than opening a public issue.
+
+## License
+
+MyMemories is available under the [MIT License](LICENSE). Third-party dependencies, fonts, map data, and external services remain subject to their own licenses and terms.
