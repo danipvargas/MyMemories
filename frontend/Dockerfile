@@ -11,7 +11,8 @@ COPY frontend/ ./frontend/
 COPY shared/ ./shared/
 
 WORKDIR /app/frontend
-RUN npm run build
+RUN --mount=type=secret,id=maptiler_api_key \
+    VITE_MAPTILER_API_KEY="$(cat /run/secrets/maptiler_api_key)" npm run build
 
 
 # ---- Runtime ----

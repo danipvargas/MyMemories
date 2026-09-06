@@ -1624,6 +1624,8 @@ button:disabled {
 .world-map-canvas .maplibregl-map {
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  border-radius: 17px;
 }
 
 .world-map-canvas .maplibregl-ctrl-group {
@@ -2010,6 +2012,11 @@ button:disabled {
 
 .nav-brand {
   display: none;
+}
+
+.nav-brand-link {
+  display: grid;
+  place-items: center;
 }
 
 .nav-item {

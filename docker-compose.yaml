@@ -33,12 +33,16 @@ services:
     expose:
       - "8080"
 
+    secrets:
+      - maptiler_api_key
+
     environment:
       MAP_STYLE_POSTCARD: ${MAP_STYLE_POSTCARD:-}
       MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-10}
       MAP_OUTPUT_QUALITY: ${MAP_OUTPUT_QUALITY:-85}
       MAP_MARKER_PATH: /app/src/assets/map_marker.png
       HEADLESS: ${HEADLESS:-true}
+      MAPTILER_API_KEY_FILE: /run/secrets/maptiler_api_key
 
     healthcheck:
       test:
@@ -88,6 +92,8 @@ services:
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
+      secrets:
+        - maptiler_api_key
 
     ports:
       - "5173:80"
@@ -117,6 +123,9 @@ secrets:
 
   postgres_db:
     file: ./secrets/postgres_database.txt
+
+  maptiler_api_key:
+    file: ./secrets/maptiler_api_key.txt
 
 volumes:
   postgres_data:

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Images, Map, Plus } from "lucide-react"
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
 
 import { useAuth } from "@/auth/useAuth"
 import LoginPage from "@/components/auth/LoginPage"
@@ -55,7 +55,9 @@ function App() {
     <div className="app-shell">
       <nav className="bottom-nav" aria-label="Navegación principal">
         <div className="nav-brand">
-          <img src="/logo.svg" alt="MisPostales" />
+          <Link className="nav-brand-link" to="/album" aria-label="Ir al álbum">
+            <img src="/logo.svg" alt="MisPostales" />
+          </Link>
         </div>
         <button
           type="button"

@@ -11,8 +11,44 @@ const maplibreScriptPath = join(
   rendererDirectory,
   "../node_modules/maplibre-gl/dist/maplibre-gl.js",
 );
-const style = JSON.parse(
-  readFileSync(join(rendererDirectory, "assets/style.json"), "utf8"),
+
+function readMapTilerApiKey() {
+  const keyFile =
+    process.env.MAPTILER_API_KEY_FILE?.trim() ??
+    "/run/secrets/maptiler_api_key";
+  return readFileSync(keyFile, "utf8").trim();
+}
+
+function addMapTilerApiKey(value, apiKey) {
+  if (typeof value === "string") {
+    if (!value.startsWith("https://api.maptiler.com/") || !apiKey) {
+      return value;
+    }
+
+    const url = new URL(value);
+    url.searchParams.set("key", apiKey);
+    return url.toString().replaceAll("%7B", "{").replaceAll("%7D", "}");
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => addMapTilerApiKey(item, apiKey));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        addMapTilerApiKey(nestedValue, apiKey),
+      ]),
+    );
+  }
+
+  return value;
+}
+
+const style = addMapTilerApiKey(
+  JSON.parse(readFileSync(join(rendererDirectory, "assets/style.json"), "utf8")),
+  readMapTilerApiKey(),
 );
 
 const config = {

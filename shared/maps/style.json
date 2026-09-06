@@ -3,7 +3,7 @@
     "name": "MyMemoriesMapStyle",
     "sources": {
         "land": {
-            "url": "https://api.maptiler.com/tiles/land-v4/tiles.json?key=2mqdP5MO4pE5AqAeGV3O",
+            "url": "https://api.maptiler.com/tiles/land-v4/tiles.json",
             "type": "vector"
         },
         "maptiler_attribution": {
@@ -11,7 +11,7 @@
             "type": "vector"
         },
         "maptiler_planet_v4": {
-            "url": "https://api.maptiler.com/tiles/v4/tiles.json?key=2mqdP5MO4pE5AqAeGV3O",
+            "url": "https://api.maptiler.com/tiles/v4/tiles.json",
             "type": "vector"
         }
     },
@@ -1462,7 +1462,7 @@
             }
         }
     },
-    "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=2mqdP5MO4pE5AqAeGV3O",
+    "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf",
     "sprite": "https://api.maptiler.com/sprites/019d2471-bb09-76a3-8579-65e9cd09cac6/sprite",
     "bearing": 0,
     "pitch": 0,
