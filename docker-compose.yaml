@@ -13,6 +13,7 @@ services:
       - postgres_user
       - postgres_password
       - postgres_db
+      - auth_secret_key
 
     environment:
       POSTGRES_USER_FILE: /run/secrets/postgres_user
@@ -74,10 +75,10 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       MAP_RENDERER_URL: http://map-renderer:8080
-      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-development-only-change-me-32-bytes}
+      AUTH_SECRET_KEY_FILE: /run/secrets/auth_secret_key
       AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
       AUTH_COOKIE_SAMESITE: ${AUTH_COOKIE_SAMESITE:-lax}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://192.168.1.146:5173}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173}
       MAP_DEFAULT_ZOOM: ${MAP_DEFAULT_ZOOM:-10}
       MAP_WIDTH: ${MAP_WIDTH:-600}
       MAP_HEIGHT: ${MAP_HEIGHT:-400}
@@ -123,6 +124,9 @@ secrets:
 
   postgres_db:
     file: ./secrets/postgres_database.txt
+
+  auth_secret_key:
+    file: ./secrets/auth_secret_key.txt
 
   maptiler_api_key:
     file: ./secrets/maptiler_api_key.txt
