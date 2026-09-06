@@ -115,6 +115,7 @@ def test_create_and_retrieve_postcard(client: httpx.Client, user: dict[str, obje
 
     assert map_response.status_code == 200
     assert map_response.headers["content-type"] == "image/webp"
+    assert map_response.headers["cache-control"] == "private, no-store"
 
 
 def test_invalid_coordinates_are_rejected_on_create(
@@ -181,6 +182,8 @@ def test_update_and_image_endpoints(client: httpx.Client, user: dict[str, object
     assert cover_response.status_code == 200
     assert image_response.headers["content-type"] == "image/jpeg"
     assert cover_response.headers["content-type"] == "image/jpeg"
+    assert image_response.headers["cache-control"] == "private, no-store"
+    assert cover_response.headers["cache-control"] == "private, no-store"
 
 
 def test_update_can_clear_optional_fields(

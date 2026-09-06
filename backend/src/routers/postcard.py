@@ -136,6 +136,7 @@ def get_postcard_image(
     return FileResponse(
         BASE_STORAGE_FOLDER / postcard_local_path,
         media_type="image/jpeg",
+        headers={"Cache-Control": "private, no-store"},
     )
 
 
@@ -164,6 +165,7 @@ def get_postcard_cover(
     return FileResponse(
         BASE_STORAGE_FOLDER / cover_local_path,
         media_type="image/jpeg",
+        headers={"Cache-Control": "private, no-store"},
     )
 
 
