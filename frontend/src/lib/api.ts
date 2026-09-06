@@ -156,7 +156,7 @@ export async function registerUser(payload: {
 
 export async function createPostcard(
   payload: CreatePostcardPayload,
-): Promise<unknown> {
+): Promise<Postcard> {
   const formData = new FormData()
 
   formData.append("title", payload.title)
@@ -197,7 +197,7 @@ export async function createPostcard(
     throw new ApiError(response.status, detail)
   }
 
-  return response.json()
+  return response.json() as Promise<Postcard>
 }
 
 export async function getUser(userId: number): Promise<User> {

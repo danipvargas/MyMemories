@@ -6,7 +6,17 @@ import {
   type FormEvent,
 } from "react"
 import { useMutation } from "@tanstack/react-query"
-import { Camera, ImagePlus, Images, MapPin, Save, Sparkles, NotebookPen } from "lucide-react"
+import {
+  Camera,
+  ImagePlus,
+  Images,
+  LoaderCircle,
+  MapPin,
+  NotebookPen,
+  Save,
+  Sparkles,
+} from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 import {
   createPostcard,
@@ -25,6 +35,7 @@ type CropStep = "original" | "cover" | null
 const EMPTY_DATE: DateParts = { year: "", month: "", day: "", unknown: false }
 
 function AddPostcardPage() {
+  const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const objectUrls = useRef<string[]>([])
@@ -33,7 +44,6 @@ function AddPostcardPage() {
   const [city, setCity] = useState("")
   const [region, setRegion] = useState("")
   const [description, setDescription] = useState("")
-  const [countryResetKey, setCountryResetKey] = useState(0)
   const [dateParts, setDateParts] = useState<DateParts>(EMPTY_DATE)
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null)
   const [originalFile, setOriginalFile] = useState<File | null>(null)
@@ -44,7 +54,6 @@ function AddPostcardPage() {
   const [cropStep, setCropStep] = useState<CropStep>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [dateError, setDateError] = useState(false)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const urls = objectUrls.current
@@ -56,19 +65,8 @@ function AddPostcardPage() {
 
   const mutation = useMutation({
     mutationFn: (payload: CreatePostcardPayload) => createPostcard(payload),
-    onSuccess: () => {
-      setTitle("")
-      setCountry("")
-      setCountryResetKey((current) => current + 1)
-      setCity("")
-      setRegion("")
-      setDescription("")
-      setDateParts(EMPTY_DATE)
-      setCoordinates(null)
-      clearImages()
-      setSuccessMessage("La postal se ha guardado en tu colección.")
-      setFormError(null)
-      setDateError(false)
+    onSuccess: (postcard) => {
+      navigate(`/postcards/${postcard.id}`, { replace: true })
     },
     onError: (error) => {
       setDateError(isDateValidationError(error))
@@ -93,8 +91,6 @@ function AddPostcardPage() {
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ""
-    setSuccessMessage(null)
-
     if (!file) {
       return
     }
@@ -137,7 +133,6 @@ function AddPostcardPage() {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setSuccessMessage(null)
     setFormError(null)
     setDateError(false)
 
@@ -250,6 +245,7 @@ function AddPostcardPage() {
                 <Camera size={16} />
                 Hacer foto
               </button>
+
               <button
                 type="button"
                 className="secondary-button"
@@ -314,7 +310,6 @@ function AddPostcardPage() {
           <label className="form-field">
             <span>País <b>*</b></span>
             <CountryCombobox
-              key={countryResetKey}
               value={country}
               onChange={setCountry}
             />
@@ -370,19 +365,23 @@ function AddPostcardPage() {
             {formError ?? getApiErrorMessage(mutation.error)}
           </div>
         )}
-        {successMessage && (
-          <div className="feedback feedback-success" role="status">
-            {successMessage}
-          </div>
-        )}
-
         <button
           type="submit"
           className="primary-button save-button"
           disabled={!canSubmit || mutation.isPending}
+          aria-busy={mutation.isPending}
         >
-          <Save size={18} />
-          {mutation.isPending ? "Guardando postal..." : "Guardar postal"}
+          {mutation.isPending ? (
+            <>
+              <LoaderCircle className="spin" size={18} />
+              Guardando postal...
+            </>
+          ) : (
+            <>
+              <Save size={18} />
+              Guardar postal
+            </>
+          )}
         </button>
       </form>
 
